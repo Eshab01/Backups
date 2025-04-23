@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Location Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .animate-pulse-soft {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-100 to-blue-200 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md">
+        <div class="text-center mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-blue-500 animate-pulse-soft" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 616 0z" />
+            </svg>
+        </div>
+
+        <h1 class="text-2xl font-bold mb-4 text-center text-gray-800">
+            Real-Time Location Tracker
+        </h1>
+
+        <div id="locationContainer" class="bg-gray-100 p-4 rounded-lg">
+            <div id="statusMessage" class="text-center text-gray-600 mb-4">
+                Waiting to access location...
+            </div>
+
+            <div id="locationDetails" class="hidden">
+                <div class="bg-blue-50 p-4 rounded-lg space-y-2">
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-blue-600">Latitude</span>
+                        <span id="latitudeValue" class="font-mono text-gray-700">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-blue-600">Longitude</span>
+                        <span id="longitudeValue" class="font-mono text-gray-700">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-blue-600">Accuracy</span>
+                        <span id="accuracyValue" class="font-mono text-gray-700">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-blue-600">Last Updated</span>
+                        <span id="timestampValue" class="font-mono text-gray-700">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="mapContainer" class="mt-4 hidden">
+            <a id="mapLink" href="#" target="_blank" class="block bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full text-center">
+                Open in Google Maps
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const statusMessage = document.getElementById('statusMessage');
+        const locationDetails = document.getElementById('locationDetails');
+        const latitudeValue = document.getElementById('latitudeValue');
+        const longitudeValue = document.getElementById('longitudeValue');
+        const accuracyValue = document.getElementById('accuracyValue');
+        const timestampValue = document.getElementById('timestampValue');
+        const mapContainer = document.getElementById('mapContainer');
+        const mapLink = document.getElementById('mapLink');
+
+        function updateLocationDisplay(position) {
+            const { latitude, longitude, accuracy } = position.coords;
+
+            latitudeValue.textContent = latitude.toFixed(6);
+            longitudeValue.textContent = longitude.toFixed(6);
+            accuracyValue.textContent = `${accuracy.toFixed(2)} meters`;
+            timestampValue.textContent = new Date().toLocaleString();
+
+            statusMessage.textContent = 'Location accessed successfully';
+            locationDetails.classList.remove('hidden');
+
+            const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+            mapLink.href = mapsUrl;
+            mapContainer.classList.remove('hidden');
+        }
+
+        function handleLocationError(error) {
+            let errorMessage = 'Unknown error';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = 'Location access denied. Please enable permissions.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = 'Location information unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = 'Location request timed out.';
+                    break;
+            }
+
+            statusMessage.textContent = errorMessage;
+        }
+
+        function initLocationTracking() {
+            if ('geolocation' in navigator) {
+                navigator.geolocation.watchPosition(
+                    updateLocationDisplay, 
+                    handleLocationError,
+                    { 
+                        enableHighAccuracy: true, 
+                        timeout: 10000, 
+                        maximumAge: 0 
+                    }
+                );
+            } else {
+                statusMessage.textContent = 'Geolocation is not supported by this browser.';
+            }
+        }
+
+        window.addEventListener('load', initLocationTracking);
+    </script>
+</body>
+</html>
