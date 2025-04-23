@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Flappy Bird</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #000;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 400px;
+            height: 600px;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #000033, #000066);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+        
+        #game-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10;
+            color: white;
+        }
+        
+        #start-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+        
+        #start-button:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+        
+        .game-over {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10;
+            color: white;
+        }
+        
+        #retry-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+        
+        #retry-button:hover {
+            background: #d32f2f;
+            transform: scale(1.05);
+        }
+        
+        #score-display {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 24px;
+            z-index: 5;
+        }
+        
+        #power-meter {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 100px;
+            height: 10px;
+            background: #333;
+            border-radius: 5px;
+            z-index: 5;
+        }
+        
+        #power-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #ff0000, #ffff00, #00ff00);
+            border-radius: 5px;
+            transition: width 0.2s;
+        }
+        
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        
+        .planet {
+            position: absolute;
+            border-radius: 50%;
+            z-index: 2;
+        }
+        
+        .powerup {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ff00ff 0%, #9900cc 100%);
+            box-shadow: 0 0 10px #ff00ff;
+            z-index: 3;
+            animation: pulse 1s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { transform: scale(1); box-shadow: 0 0 10px #ff00ff; }
+            to { transform: scale(1.1); box-shadow: 0 0 20px #ff00ff; }
+        }
+
+        /* Leaderboard Styles */
+        #leaderboard-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 5px 10px;
+            background: rgba(0, 0, 102, 0.7);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            z-index: 20;
+        }
+        
+        #leaderboard-button:hover {
+            background: rgba(0, 0, 153, 0.7);
+            transform: scale(1.05);
+        }
+        
+        #leaderboard-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            background: rgba(0, 0, 51, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            z-index: 15;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: none;
+        }
+        
+        #leaderboard-title {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #4CAF50;
+            text-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        }
+        
+        #leaderboard-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            background: linear-gradient(to right, rgba(0, 0, 102, 0.5), rgba(0, 0, 153, 0.5));
+            transition: all 0.3s;
+        }
+        
+        .leaderboard-item:hover {
+            background: linear-gradient(to right, rgba(0, 0, 153, 0.5), rgba(0, 0, 204, 0.5));
+            transform: scale(1.02);
+        }
+        
+        .rank {
+            width: 30px;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+        
+        .player-name {
+            flex-grow: 1;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0 10px;
+        }
+        
+        .score {
+            width: 60px;
+            text-align: right;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .current-player {
+            background: linear-gradient(to right, rgba(76, 175, 80, 0.3), rgba(76, 175, 80, 0.1));
+            border-left: 3px solid #4CAF50;
+        }
+        
+        #leaderboard-close {
+            display: block;
+            width: 100%;
+            margin-top: 15px;
+            padding: 8px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        #leaderboard-close:hover {
+            background: #444;
+            transform: scale(1.05);
+        }
+        
+        /* Name Input Overlay */
+        #name-input-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+        }
+        
+        #name-input-container {
+            background: rgba(0, 0, 102, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            text-align: center;
+            width: 80%;
+            max-width: 300px;
+        }
+        
+        #name-input-title {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        #player-name-input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+        }
+        
+        #submit-name {
+            padding: 8px 15px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        #submit-name:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+        
+        /* Cosmic sparkles for leaderboard */
+        .cosmic-sparkle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            animation: sparkle 3s infinite;
+            z-index: 1;
+        }
+        
+        @keyframes sparkle {
+            0% { opacity: 0; transform: scale(0); }
+            50% { opacity: 0.8; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0); }
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="game-container">
+        <div id="score-display">Score: 0</div>
+        <div id="power-meter">
+            <div id="power-bar"></div>
+        </div>
+        <canvas id="game-canvas" width="400" height="600"></canvas>
+        <button id="leaderboard-button">Leaderboard</button>
+        
+        <div id="leaderboard-container">
+            <h2 id="leaderboard-title">Top Pilots</h2>
+            <ul id="leaderboard-list">
+                <!-- Leaderboard items will be inserted here -->
+            </ul>
+            <button id="leaderboard-close">Close</button>
+        </div>
+        
+        <div id="name-input-overlay">
+            <div id="name-input-container">
+                <h3 id="name-input-title">You made the leaderboard!</h3>
+                <input type="text" id="player-name-input" placeholder="Enter your name" maxlength="15">
+                <button id="submit-name">Submit</button>
+            </div>
+        </div>
+        <div id="start-screen">
+            <h1>Cosmic Flappy Bird</h1>
+            <p>Press SPACE or tap to flap</p>
+            <p>Hold for power flap!</p>
+            <button id="start-button">Start Game</button>
+        </div>
+        <div class="game-over">
+            <h1>Game Over</h1>
+            <h2>Your Score: <span id="final-score">0</span></h2>
+            <button id="retry-button">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const canvas = document.getElementById('game-canvas');
+            const ctx = canvas.getContext('2d');
+            const startScreen = document.getElementById('start-screen');
+            const startButton = document.getElementById('start-button');
+            const gameOverScreen = document.querySelector('.game-over');
+            const retryButton = document.getElementById('retry-button');
+            const scoreDisplay = document.getElementById('score-display');
+            const finalScoreDisplay = document.getElementById('final-score');
+            const powerBar = document.getElementById('power-bar');
+            
+            // Game variables
+            let game;
+            let gameStarted = false;
+            let score = 0;
+            let powerLevel = 0;
+            let powerCharging = false;
+            let isPowerFlap = false;
+            let stars = [];
+            let planets = [];
+            let powerups = [];
+            let activeMode = 'normal'; // normal, slow-mo, invincible
+            let modeTimer = 0;
+            
+            // Bird properties
+            const birdSize = 30;
+            let birdX = 100;
+            let birdY = canvas.height / 2;
+            let birdVelocity = 0;
+            let birdGravity = 0.5;
+            let birdLift = -10;
+            let birdColor = '#FFD700';
+            
+            // Pipe properties
+            const pipeWidth = 60;
+            const pipeGap = 170;
+            const pipeBorderWidth = 3;
+            let pipeSpeed = 2;
+            let pipes = [];
+            let pipeInterval = 1500; // Time between pipe spawns
+            let lastPipeTime = 0;
+            
+            // Game settings
+            const frameRate = 60;
+            
+            // Star setup
+            for (let i = 0; i < 100; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 1,
+                    speed: Math.random() * 0.5 + 0.1
+                });
+            }
+            
+            // Planet setup
+            const planetColors = [
+                '#FF6B6B', // Red
+                '#4ECDC4', // Teal
+                '#FFE66D', // Yellow
+                '#1A535C', // Dark teal
+                '#8860D0'  // Purple
+            ];
+            
+            for (let i = 0; i < 3; i++) {
+                planets.push({
+                    x: Math.random() * canvas.width * 3,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 50 + 20,
+                    color: planetColors[Math.floor(Math.random() * planetColors.length)]
+                });
+            }
+            
+            // Game initialization
+            function initGame() {
+                // Reset game state
+                birdY = canvas.height / 2;
+                birdVelocity = 0;
+                score = 0;
+                powerLevel = 0;
+                powerBar.style.width = '0%';
+                pipes = [];
+                gameStarted = true;
+                scoreDisplay.textContent = 'Score: 0';
+                powerups = [];
+                activeMode = 'normal';
+                modeTimer = 0;
+                birdColor = '#FFD700';
+                pipeSpeed = 2;
+                
+                // Start game loop
+                game = setInterval(updateGame, 1000 / frameRate);
+                
+                // Reset pipe spawn timer
+                lastPipeTime = performance.now();
+            }
+            
+            // Game update function
+            function updateGame() {
+                const currentTime = performance.now();
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw stars and move them
+                drawStars();
+                
+                // Draw planets
+                drawPlanets();
+                
+                // Update bird position
+                birdVelocity += birdGravity;
+                
+                // Adjust for power flap
+                if (isPowerFlap) {
+                    birdY += birdVelocity * 0.5;
+                    isPowerFlap = false;
+                } else {
+                    birdY += birdVelocity;
+                }
+                
+                // Check for power charging
+                if (powerCharging && powerLevel < 100) {
+                    powerLevel += 1;
+                    powerBar.style.width = powerLevel + '%';
+                }
+                
+                // Generate pipes
+                if (currentTime - lastPipeTime > pipeInterval) {
+                    generatePipe();
+                    lastPipeTime = currentTime;
+                }
+                
+                // Possibly spawn powerup (5% chance per second)
+                if (Math.random() < 0.0008) {
+                    spawnPowerup();
+                }
+                
+                // Update and draw pipes
+                updatePipes();
+                
+                // Update and draw powerups
+                updatePowerups();
+                
+                // Draw bird
+                drawBird();
+                
+                // Check collisions
+                if (checkCollisions() && activeMode !== 'invincible') {
+                    gameOver();
+                }
+                
+                // Check if bird is out of bounds
+                if (birdY > canvas.height || birdY < 0) {
+                    gameOver();
+                }
+                
+                // Update mode timer
+                if (activeMode !== 'normal' && modeTimer > 0) {
+                    modeTimer--;
+                    if (modeTimer <= 0) {
+                        // Reset to normal mode
+                        activeMode = 'normal';
+                        birdColor = '#FFD700';
+                        pipeSpeed = 2;
+                    }
+                }
+            }
+            
+            // Draw the bird
+            function drawBird() {
+                ctx.fillStyle = birdColor;
+                ctx.beginPath();
+                ctx.arc(birdX, birdY, birdSize / 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw bird eye
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(birdX + 8, birdY - 5, 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw bird beak
+                ctx.fillStyle = '#FF8C00';
+                ctx.beginPath();
+                ctx.moveTo(birdX + 12, birdY);
+                ctx.lineTo(birdX + 25, birdY);
+                ctx.lineTo(birdX + 12, birdY + 5);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Draw wings
+                ctx.fillStyle = activeMode === 'invincible' ? '#FF00FF' : '#E6C700';
+                
+                // Wing animation based on velocity
+                const wingOffset = Math.sin(performance.now() / 100) * 5;
+                
+                ctx.beginPath();
+                ctx.ellipse(birdX - 5, birdY + wingOffset, 10, 5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw trail effect when in power mode
+                if (activeMode !== 'normal') {
+                    ctx.globalAlpha = 0.5;
+                    for (let i = 1; i <= 3; i++) {
+                        const trailColor = activeMode === 'slow-mo' ? '#00FFFF' : '#FF00FF';
+                        ctx.fillStyle = trailColor;
+                        ctx.beginPath();
+                        ctx.arc(birdX - i * 10, birdY, birdSize / 2 - i * 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.globalAlpha = 1;
+                }
+            }
+            
+            // Generate a new pipe
+            function generatePipe() {
+                const pipeY = Math.random() * (canvas.height - pipeGap - 100) + 50;
+                pipes.push({
+                    x: canvas.width,
+                    y: pipeY,
+                    passed: false
+                });
+            }
+            
+            // Update and draw pipes
+            function updatePipes() {
+                for (let i = 0; i < pipes.length; i++) {
+                    pipes[i].x -= pipeSpeed;
+                    
+                    // Check if bird passed pipe
+                    if (!pipes[i].passed && birdX > pipes[i].x + pipeWidth) {
+                        pipes[i].passed = true;
+                        score++;
+                        scoreDisplay.textContent = 'Score: ' + score;
+                    }
+                    
+                    // Draw pipes
+                    const pipeTopHeight = pipes[i].y;
+                    const pipeBottomHeight = canvas.height - pipes[i].y - pipeGap;
+                    
+                    // Top pipe
+                    ctx.fillStyle = '#33cc33';
+                    ctx.fillRect(pipes[i].x, 0, pipeWidth, pipeTopHeight);
+                    
+                    // Pipe border
+                    ctx.strokeStyle = '#006600';
+                    ctx.lineWidth = pipeBorderWidth;
+                    ctx.strokeRect(pipes[i].x, 0, pipeWidth, pipeTopHeight);
+                    
+                    // Pipe edge
+                    ctx.fillStyle = '#00cc00';
+                    ctx.fillRect(pipes[i].x - 2, pipeTopHeight - 20, pipeWidth + 4, 20);
+                    
+                    // Bottom pipe
+                    ctx.fillStyle = '#33cc33';
+                    ctx.fillRect(pipes[i].x, canvas.height - pipeBottomHeight, pipeWidth, pipeBottomHeight);
+                    
+                    // Pipe border
+                    ctx.strokeStyle = '#006600';
+                    ctx.lineWidth = pipeBorderWidth;
+                    ctx.strokeRect(pipes[i].x, canvas.height - pipeBottomHeight, pipeWidth, pipeBottomHeight);
+                    
+                    // Pipe edge
+                    ctx.fillStyle = '#00cc00';
+                    ctx.fillRect(pipes[i].x - 2, canvas.height - pipeBottomHeight, pipeWidth + 4, 20);
+                }
+                
+                // Remove pipes that are out of screen
+                pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0);
+            }
+            
+            // Check for collisions
+            function checkCollisions() {
+                for (let i = 0; i < pipes.length; i++) {
+                    // Check if bird is at same x position as pipe
+                    if (birdX + birdSize / 2 > pipes[i].x && birdX - birdSize / 2 < pipes[i].x + pipeWidth) {
+                        // Check if bird hits top pipe
+                        if (birdY - birdSize / 2 < pipes[i].y) {
+                            return true;
+                        }
+                        // Check if bird hits bottom pipe
+                        if (birdY + birdSize / 2 > pipes[i].y + pipeGap) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+            
+            // Spawn a powerup
+            function spawnPowerup() {
+                const types = ['slow-mo', 'invincible'];
+                const powerupType = types[Math.floor(Math.random() * types.length)];
+                
+                powerups.push({
+                    x: canvas.width,
+                    y: Math.random() * (canvas.height - 100) + 50,
+                    type: powerupType
+                });
+            }
+            
+            // Update and draw powerups
+            function updatePowerups() {
+                for (let i = 0; i < powerups.length; i++) {
+                    powerups[i].x -= pipeSpeed;
+                    
+                    // Draw powerup
+                    ctx.fillStyle = powerups[i].type === 'slow-mo' ? '#00FFFF' : '#FF00FF';
+                    ctx.beginPath();
+                    ctx.arc(powerups[i].x, powerups[i].y, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Add glow effect
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = powerups[i].type === 'slow-mo' ? '#00FFFF' : '#FF00FF';
+                    ctx.beginPath();
+                    ctx.arc(powerups[i].x, powerups[i].y, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    
+                    // Draw icon
+                    ctx.fillStyle = '#FFF';
+                    ctx.font = '14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(powerups[i].type === 'slow-mo' ? '⏱️' : '⚡', powerups[i].x, powerups[i].y);
+                    
+                    // Check collision with bird
+                    const dx = powerups[i].x - birdX;
+                    const dy = powerups[i].y - birdY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 15 + birdSize / 2) {
+                        // Activate powerup
+                        activatePowerup(powerups[i].type);
+                        // Remove powerup
+                        powerups.splice(i, 1);
+                        i--;
+                    }
+                }
+                
+                // Remove powerups that are out of screen
+                powerups = powerups.filter(powerup => powerup.x > -20);
+            }
+            
+            // Activate a powerup
+            function activatePowerup(type) {
+                activeMode = type;
+                modeTimer = 300; // 5 seconds at 60 FPS
+                
+                if (type === 'slow-mo') {
+                    pipeSpeed = 1;
+                    birdColor = '#00FFFF';
+                } else if (type === 'invincible') {
+                    birdColor = '#FF00FF';
+                }
+            }
+            
+            // Draw stars
+            function drawStars() {
+                ctx.fillStyle = 'white';
+                for (let i = 0; i < stars.length; i++) {
+                    ctx.beginPath();
+                    ctx.arc(stars[i].x, stars[i].y, stars[i].size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Move stars
+                    stars[i].x -= stars[i].speed;
+                    
+                    // Wrap around
+                    if (stars[i].x < 0) {
+                        stars[i].x = canvas.width;
+                        stars[i].y = Math.random() * canvas.height;
+                    }
+                }
+            }
+            
+            // Draw planets
+            function drawPlanets() {
+                for (let i = 0; i < planets.length; i++) {
+                    ctx.fillStyle = planets[i].color;
+                    ctx.beginPath();
+                    ctx.arc(planets[i].x, planets[i].y, planets[i].size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Add some detail to planets
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                    ctx.beginPath();
+                    ctx.arc(planets[i].x - planets[i].size / 3, planets[i].y - planets[i].size / 3, planets[i].size / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Move planets slowly
+                    planets[i].x -= 0.1;
+                    
+                    // Wrap around with a delay
+                    if (planets[i].x + planets[i].size < 0) {
+                        planets[i].x = canvas.width + planets[i].size + Math.random() * canvas.width;
+                        planets[i].y = Math.random() * canvas.height;
+                    }
+                }
+            }
+            
+            // Flap function
+            function flap() {
+                if (!gameStarted) return;
+                
+                if (powerLevel >= 100) {
+                    // Power flap
+                    birdVelocity = birdLift * 1.5;
+                    isPowerFlap = true;
+                    
+                    // Visual effect for power flap
+                    for (let i = 0; i < 20; i++) {
+                        setTimeout(() => {
+                            if (!gameStarted) return;
+                            // Create power flap particles
+                            ctx.fillStyle = '#FFFF00';
+                            ctx.beginPath();
+                            ctx.arc(birdX - 10, birdY + Math.random() * 20 - 10, Math.random() * 5 + 2, 0, Math.PI * 2);
+                            ctx.fill();
+                        }, i * 10);
+                    }
+                } else {
+                    // Normal flap
+                    birdVelocity = birdLift;
+                }
+                
+                // Reset power level
+                powerLevel = 0;
+                powerBar.style.width = '0%';
+            }
+            
+            // Game over function
+            function gameOver() {
+                clearInterval(game);
+                gameStarted = false;
+                gameOverScreen.style.display = 'flex';
+                finalScoreDisplay.textContent = score;
+            }
+            
+            // Event listeners
+            startButton.addEventListener('click', function() {
+                startScreen.style.display = 'none';
+                initGame();
+            });
+            
+            retryButton.addEventListener('click', function() {
+                gameOverScreen.style.display = 'none';
+                initGame();
+            });
+            
+            // Mouse events
+            canvas.addEventListener('mousedown', function() {
+                if (!gameStarted) return;
+                powerCharging = true;
+            });
+            
+            canvas.addEventListener('mouseup', function() {
+                if (!gameStarted) return;
+                powerCharging = false;
+                flap();
+            });
+            
+            // Touch events for mobile
+            canvas.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                if (!gameStarted) return;
+                powerCharging = true;
+            });
+            
+            canvas.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                if (!gameStarted) return;
+                powerCharging = false;
+                flap();
+            });
+            
+            // Keyboard events
+            document.addEventListener('keydown', function(e) {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    if (!gameStarted) return;
+                    powerCharging = true;
+                }
+            });
+            
+            document.addEventListener('keyup', function(e) {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    if (!gameStarted) return;
+                    powerCharging = false;
+                    flap();
+                }
+            });
+        });
+         // Main game elements
+         const gameContainer = document.getElementById('game-container');
+        const startScreen = document.getElementById('start-screen');
+        const startButton = document.getElementById('start-button');
+        const gameOverScreen = document.getElementById('game-over');
+        const retryButton = document.getElementById('retry-button');
+        const scoreDisplay = document.getElementById('score-display');
+        const finalScore = document.getElementById('final-score');
+        
+        // Leaderboard elements
+        const leaderboardButton = document.getElementById('leaderboard-button');
+        const leaderboardContainer = document.getElementById('leaderboard-container');
+        const leaderboardList = document.getElementById('leaderboard-list');
+        const leaderboardClose = document.getElementById('leaderboard-close');
+        
+        // Name input elements
+        const nameInputOverlay = document.getElementById('name-input-overlay');
+        const playerNameInput = document.getElementById('player-name-input');
+        const submitNameButton = document.getElementById('submit-name');
+        
+        // Game variables
+        let score = 0;
+        let currentPlayerName = "Player";
+        
+        // Leaderboard functionality
+        const LEADERBOARD_KEY = 'spaceFlappyLeaderboard';
+        const MAX_LEADERBOARD_ENTRIES = 10;
+        
+        // Load leaderboard from localStorage or create empty one
+        function getLeaderboard() {
+            const leaderboard = localStorage.getItem(LEADERBOARD_KEY);
+            return leaderboard ? JSON.parse(leaderboard) : [];
+        }
+        
+        // Save leaderboard to localStorage
+        function saveLeaderboard(leaderboard) {
+            localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard));
+        }
+        
+        // Add a new score to the leaderboard
+        function addScoreToLeaderboard(name, score) {
+            let leaderboard = getLeaderboard();
+            
+            // Add new score
+            leaderboard.push({ name, score });
+            
+            // Sort by score (descending)
+            leaderboard.sort((a, b) => b.score - a.score);
+            
+            // Keep only the top entries
+            leaderboard = leaderboard.slice(0, MAX_LEADERBOARD_ENTRIES);
+            
+            // Save updated leaderboard
+            saveLeaderboard(leaderboard);
+            
+            return leaderboard;
+        }
+        
+        // Check if a score qualifies for the leaderboard
+        function checkLeaderboardQualification(score) {
+            const leaderboard = getLeaderboard();
+            
+            if (leaderboard.length < MAX_LEADERBOARD_ENTRIES) {
+                return true; // Leaderboard isn't full yet
+            }
+            
+            // Check if score is higher than the lowest on the leaderboard
+            const lowestScore = leaderboard[leaderboard.length - 1].score;
+            return score > lowestScore;
+        }
+        
+        // Render the leaderboard
+        function renderLeaderboard() {
+            const leaderboard = getLeaderboard();
+            leaderboardList.innerHTML = '';
+            
+            if (leaderboard.length === 0) {
+                const emptyItem = document.createElement('li');
+                emptyItem.className = 'leaderboard-item';
+                emptyItem.textContent = 'No scores yet. Be the first!';
+                leaderboardList.appendChild(emptyItem);
+                return;
+            }
+            
+            leaderboard.forEach((entry, index) => {
+                const item = document.createElement('li');
+                item.className = 'leaderboard-item';
+                
+                // Highlight current player's score
+                if (entry.name === currentPlayerName) {
+                    item.classList.add('current-player');
+                }
+                
+                const rankSpan = document.createElement('span');
+                rankSpan.className = 'rank';
+                rankSpan.textContent = `${index + 1}.`;
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'player-name';
+                nameSpan.textContent = entry.name;
+                
+                const scoreSpan = document.createElement('span');
+                scoreSpan.className = 'score';
+                scoreSpan.textContent = entry.score;
+                
+                item.appendChild(rankSpan);
+                item.appendChild(nameSpan);
+                item.appendChild(scoreSpan);
+                
+                leaderboardList.appendChild(item);
+            });
+        }
+        
+        // Toggle leaderboard visibility
+        function toggleLeaderboard() {
+            if (leaderboardContainer.style.display === 'block') {
+                leaderboardContainer.style.display = 'none';
+            } else {
+                renderLeaderboard();
+                leaderboardContainer.style.display = 'block';
+                addCosmicSparkles();
+            }
+        }
+        
+        // Add cosmic sparkles to leaderboard for visual effect
+        function addCosmicSparkles() {
+            // Remove any existing sparkles
+            document.querySelectorAll('.cosmic-sparkle').forEach(sparkle => {
+                sparkle.remove();
+            });
+            
+            // Add new sparkles
+            for (let i = 0; i < 15; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'cosmic-sparkle';
+                
+                // Random position around the leaderboard
+                const left = Math.random() * 360 - 30;
+                const top = Math.random() * 560 - 30;
+                
+                // Random size and delay
+                const size = Math.random() * 4 + 1;
+                const delay = Math.random() * 3;
+                
+                sparkle.style.left = `${left}px`;
+                sparkle.style.top = `${top}px`;
+                sparkle.style.width = `${size}px`;
+                sparkle.style.height = `${size}px`;
+                sparkle.style.animationDelay = `${delay}s`;
+                
+                gameContainer.appendChild(sparkle);
+            }
+        }
+        
+        // Show name input overlay for leaderboard qualification
+        function showNameInputOverlay() {
+            nameInputOverlay.style.display = 'flex';
+            playerNameInput.focus();
+        }
+        
+        // Game over handling with leaderboard integration
+        function handleGameOver() {
+            gameOverScreen.style.display = 'flex';
+            finalScore.textContent = `Your Score: ${score}`;
+            
+            // Check if score qualifies for leaderboard
+            if (checkLeaderboardQualification(score)) {
+                // Show name input after a short delay
+                setTimeout(showNameInputOverlay, 1000);
+            }
+        }
+        
+        // Submit name and add score to leaderboard
+        function submitNameAndScore() {
+            const name = playerNameInput.value.trim() || "Pilot_" + Math.floor(Math.random() * 1000);
+            currentPlayerName = name;
+            
+            // Add score to leaderboard
+            addScoreToLeaderboard(name, score);
+            
+            // Hide the name input overlay
+            nameInputOverlay.style.display = 'none';
+            
+            // Show the leaderboard
+            renderLeaderboard();
+            leaderboardContainer.style.display = 'block';
+            addCosmicSparkles();
+        }
+        
+        // Event listeners
+        leaderboardButton.addEventListener('click', toggleLeaderboard);
+        leaderboardClose.addEventListener('click', () => {
+            leaderboardContainer.style.display = 'none';
+        });
+        
+        submitNameButton.addEventListener('click', submitNameAndScore);
+        playerNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                submitNameAndScore();
+            }
+        });
+        
+        // Start game and reset functions (placeholders for your game logic)
+        function startGame() {
+            startScreen.style.display = 'none';
+            score = 0;
+            scoreDisplay.textContent = `Score: ${score}`;
+            // Additional game initialization code would go here
+        }
+        
+        function resetGame() {
+            gameOverScreen.style.display = 'none';
+            score = 0;
+            scoreDisplay.textContent = `Score: ${score}`;
+            // Additional reset code would go here
+        }
+        
+        // Example function to update score during gameplay
+        function updateScore(points) {
+            score += points;
+            scoreDisplay.textContent = `Score: ${score}`;
+        }
+        
+        // Connect buttons to functions
+        startButton.addEventListener('click', startGame);
+        retryButton.addEventListener('click', resetGame);
+        
+        // This is a placeholder for the game over trigger
+        // In your actual game code, you would call handleGameOver() when the player loses
+        
+        // For demonstration purposes only - simulating a game over after 5 seconds
+        // Remove this in your actual implementation
+        /* 
+        startButton.addEventListener('click', () => {
+            startGame();
+            // Simulate score increase
+            const scoreInterval = setInterval(() => {
+                updateScore(1);
+            }, 500);
+            
+            // Simulate game over after some time
+            setTimeout(() => {
+                clearInterval(scoreInterval);
+                handleGameOver();
+            }, 5000);
+        });
+        */
+        
+        // Initialize with empty leaderboard if it doesn't exist
+        if (!localStorage.getItem(LEADERBOARD_KEY)) {
+            saveLeaderboard([]);
+        }
+    </script>
+</body>
+</html>

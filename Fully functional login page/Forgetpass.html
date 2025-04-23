@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forgot Password</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: #0a0a0a;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    
+    .background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    .bubble {
+      position: absolute;
+      bottom: -50px;
+      background: linear-gradient(to right, #8e2de2, #4a00e0);
+      border-radius: 50%;
+      opacity: 0;
+      animation: rise 15s infinite ease-in;
+    }
+    
+    @keyframes rise {
+      0% {
+        transform: translateY(0) scale(0.3);
+        opacity: 0;
+      }
+      50% {
+        opacity: 0.2;
+      }
+      100% {
+        transform: translateY(-1000px) scale(1);
+        opacity: 0;
+      }
+    }
+    
+    /* Glowing particles animation */
+    .particles {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      overflow: hidden;
+    }
+    
+    .particle {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: #8e2de2;
+      border-radius: 50%;
+      opacity: 0;
+      animation: float 10s infinite linear;
+    }
+    
+    @keyframes float {
+      0% {
+        transform: translateY(0) translateX(0);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.8;
+      }
+      90% {
+        opacity: 0.6;
+      }
+      100% {
+        transform: translateY(-800px) translateX(100px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    
+    .forgot-container {
+      position: relative;
+      z-index: 10;
+      width: 400px;
+      padding: 40px;
+      background: rgba(15, 15, 15,.8);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+      color: #fff;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      animation: container-appear 0.8s ease-out forwards;
+    }
+    
+    @keyframes container-appear {
+      0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    
+    .forgot-container::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        to bottom right,
+        rgba(138, 43, 226, 0.1),
+        rgba(74, 0, 224, 0.05),
+        rgba(0, 0, 0, 0)
+      );
+      transform: rotate(45deg);
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    /* Pulsing border effect */
+    .forgot-container::after {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, #8e2de2, #4a00e0, #8e2de2, #4a00e0);
+      border-radius: 18px;
+      z-index: -2;
+      animation: border-pulse 3s infinite linear;
+      opacity: 0.3;
+    }
+    
+    @keyframes border-pulse {
+      0% {
+        opacity: 0.2;
+      }
+      50% {
+        opacity: 0.4;
+      }
+      100% {
+        opacity: 0.2;
+      }
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: 300;
+      font-size: 2rem;
+      background: linear-gradient(to right, #8e2de2, #4a00e0);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: glow 3s infinite alternate;
+    }
+    
+    .subtitle {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #aaa;
+      font-size: 0.95rem;
+      animation: fadeIn 1s ease-out 0.3s forwards;
+      opacity: 0;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes glow {
+      0% {
+        text-shadow: 0 0 10px rgba(138, 43, 226, 0.2);
+      }
+      100% {
+        text-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+      }
+    }
+    
+    .form-group {
+      position: relative;
+      margin-bottom: 30px;
+      animation: slide-up 0.5s ease-out forwards;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    
+    .form-group:nth-child(1) {
+      animation-delay: 0.4s;
+    }
+    
+    .form-group:nth-child(2) {
+      animation-delay: 0.6s;
+    }
+    
+    @keyframes slide-up {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 12px 20px;
+      background: rgba(30, 30, 30, 0.8);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    
+    .form-group input:focus {
+      box-shadow: 0 0 10px rgba(138, 43, 226, 0.3);
+      background: rgba(40, 40, 40, 0.8);
+    }
+    
+    .form-group label {
+      position: absolute;
+      top: 14px;
+      left: 20px;
+      color: #aaa;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+    
+    .form-group input:focus + label,
+    .form-group input:not(:placeholder-shown) + label {
+      top: -25px;
+      left: 0;
+      font-size: 14px;
+      color: #8e2de2;
+    }
+    
+    .btn-reset {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(to right, #8e2de2, #4a00e0);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      animation: slide-up 0.5s ease-out 0.8s forwards;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    
+    .btn-reset::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+      );
+      transition: 0.5s;
+    }
+    
+    .btn-reset:hover::before {
+      left: 100%;
+    }
+    
+    .btn-reset:hover {
+      box-shadow: 0 0 15px rgba(138, 43, 226, 0.6);
+      transform: translateY(-2px);
+    }
+    
+    .links {
+      display: flex;
+      justify-content: center;
+      margin-top: 25px;
+      font-size: 14px;
+      animation: slide-up 0.5s ease-out 1s forwards;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    
+    .links a {
+      color: #8e2de2;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .links a:hover {
+      color: #4a00e0;
+      text-shadow: 0 0 5px rgba(138, 43, 226, 0.3);
+    }
+    
+    .success-message {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 15, 15, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transform: translateY(100%);
+      transition: transform 0.5s ease-out;
+      z-index: 20;
+    }
+    
+    .success-message.active {
+      transform: translateY(0);
+    }
+    
+    .check-mark {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(to right, #8e2de2, #4a00e0);
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .check-mark svg {
+      width: 40px;
+      height: 40px;
+      stroke-dasharray: 80;
+      stroke-dashoffset: 80;
+      animation: check-draw 1s forwards 0.3s;
+    }
+    
+    @keyframes check-draw {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+    
+    .success-text {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: white;
+    }
+    
+    .success-subtext {
+      font-size: 0.9rem;
+      color: #aaa;
+      text-align: center;
+      max-width: 80%;
+    }
+  </style>
+</head>
+<body>
+  <div class="background" id="background"></div>
+  <div class="particles" id="particles"></div>
+  
+  <div class="forgot-container">
+    <h1>Password bhool gye??</h1>
+    <p class="subtitle">Enter your email address and we'll send you a link to reset your password</p>
+    
+    <form id="forgotForm">
+      <div class="form-group">
+        <input type="email" id="userEmail" placeholder=" " required>
+        <label for="userEmail">Email bataaiye maalik...</label>
+      </div>
+      <div class="form-group">
+        <input type="text" id="userId" placeholder=" " required>
+        <label for="userId">User ID bhi bata dijiye...</label>
+      </div>
+      <button type="submit" class="btn-reset">Link bheju maalik??</button>
+      <div class="links">
+        <a href="index.html">Back to Login</a>
+      </div>
+    </form>
+    
+    <div class="success-message" id="successMessage">
+      <div class="check-mark">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" width="40" height="40">
+          <path fill="none" stroke="#FFFFFF" stroke-width="3" d="M14,27l7.8,7.8L38,14.2" />
+        </svg>
+      </div>
+      <p class="success-text">Email Sent!</p>
+      <p class="success-subtext">Check your inbox for the password reset link. It may take a few minutes to arrive.</p>
+    </div>
+  </div>
+
+  <script>
+    const background = document.getElementById('background');
+    
+    function createBubbles() {
+      const bubbleCount = 15;
+      
+      for (let i = 0; i < bubbleCount; i++) {
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        
+        const size = Math.random() * 120 + 40;
+        bubble.style.width = `${size}px`;
+        bubble.style.height = `${size}px`;
+        
+        const position = Math.random() * 100;
+        bubble.style.left = `${position}%`;
+        
+        const delay = Math.random() * 15;
+        bubble.style.animationDelay = `${delay}s`;
+        
+        background.appendChild(bubble);
+      }
+    }
+    
+    const particles = document.getElementById('particles');
+    
+    function createParticles() {
+      const particleCount = 30;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        const size = Math.random() * 4 + 1;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        const posX = Math.random() * 100;
+        const posY = Math.random() * 100;
+        particle.style.left = `${posX}%`;
+        particle.style.bottom = `${posY}%`;
+        
+        const delay = Math.random() * 10;
+        particle.style.animationDelay = `${delay}s`;
+        
+        const brightness = Math.random() * 50 + 50;
+        particle.style.filter = `brightness(${brightness}%)`;
+        
+        particles.appendChild(particle);
+      }
+    }
+    
+    createBubbles();
+    createParticles();
+    
+    const inputs = document.querySelectorAll('input');
+    
+    inputs.forEach(input => {
+      input.addEventListener('focus', () => {
+        input.parentElement.style.transform = 'translateY(-5px)';
+        input.parentElement.style.transition = 'transform 0.3s ease';
+      });
+      
+      input.addEventListener('blur', () => {
+        input.parentElement.style.transform = 'translateY(0)';
+      });
+    });
+    
+    const forgotForm = document.getElementById('forgotForm');
+    const successMessage = document.getElementById('successMessage');
+    
+    forgotForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const button = document.querySelector('.btn-reset');
+      button.innerHTML = 'PROCESSING...';
+      button.style.opacity = '0.8';
+      
+      setTimeout(() => {
+        successMessage.classList.add('active');
+      }, 1500);
+    });
+  </script>
+</body>
+</html>

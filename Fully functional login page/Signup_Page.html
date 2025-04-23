@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Page</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: #0a0a0a;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    
+    .background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    .bubble {
+      position: absolute;
+      bottom: -50px;
+      background: linear-gradient(to right, #8e2de2, #4a00e0);
+      border-radius: 50%;
+      opacity: 0;
+      animation: rise 10s infinite ease-in;
+    }
+    
+    @keyframes rise {
+      0% {
+        transform: translateY(0) scale(0.3);
+        opacity: 0;
+      }
+      50% {
+        opacity: 0.2;
+      }
+      100% {
+        transform: translateY(-1000px) scale(1);
+        opacity: 0;
+      }
+    }
+    
+    .login-container {
+      position: relative;
+      z-index: 10;
+      width: 400px;
+      padding: 40px;
+      background: rgba(15, 15, 15, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+      color: #fff;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .login-container::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        to bottom right,
+        rgba(138, 43, 226, 0.1),
+        rgba(74, 0, 224, 0.05),
+        rgba(0, 0, 0, 0)
+      );
+      transform: rotate(45deg);
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-weight: 300;
+      font-size: 2rem;
+      background: linear-gradient(to right, #8e2de2, #4a00e0);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: glow 3s infinite alternate;
+    }
+    
+    @keyframes glow {
+      0% {
+        text-shadow: 0 0 10px rgba(138, 43, 226, 0.2);
+      }
+      100% {
+        text-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+      }
+    }
+    
+    .form-group {
+      position: relative;
+      margin-bottom: 30px;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 12px 20px;
+      background: rgba(30, 30, 30, 0.8);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    
+    .form-group input:focus {
+      box-shadow: 0 0 10px rgba(138, 43, 226, 0.3);
+      background: rgba(40, 40, 40, 0.8);
+    }
+    
+    .form-group label {
+      position: absolute;
+      top: 14px;
+      left: 20px;
+      color: #aaa;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+    
+    .form-group input:focus + label,
+    .form-group input:not(:placeholder-shown) + label {
+      top: -25px;
+      left: 0;
+      font-size: 14px;
+      color: #8e2de2;
+    }
+    
+    .btn-login {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(to right, #8e2de2, #4a00e0);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-login::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+      );
+      transition: 0.5s;
+    }
+    
+    .btn-login:hover::before {
+      left: 100%;
+    }
+    
+    .btn-login:hover {
+      box-shadow: 0 0 15px rgba(138, 43, 226, 0.6);
+      transform: translateY(-2px);
+    }
+    
+    .links {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    
+    .links a {
+      color: #8e2de2;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .links a:hover {
+      color: #4a00e0;
+      text-shadow: 0 0 5px rgba(138, 43, 226, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="background" id="background"></div>
+  
+  <div class="login-container">
+    <h1>Nai ho chammak challo!!</h1>
+    <form>
+      <div class="form-group">
+        <input type="text" id="name" placeholder=" " required>
+        <label for="name">Aapka name pata chal jaata to...</label>
+      </div>
+      <div class="form-group">
+        <input type="text" id="number" placeholder=" " required>
+        <label for="number">Number bhi mill jaata to...</label>
+      </div>
+      <div class="form-group">
+        <input type="password" id="userPass" placeholder=" " required>
+        <label for="userPass">Password set karlo...</label>
+      </div>
+      <button type="submit" class="btn-login">Bana du malik??</button>
+      <div class="links">
+        <a href="index.html">Puraane ho gye vapas??</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const background = document.getElementById('background');
+    
+    function createBubbles() {
+      const bubbleCount = 15;
+      
+      for (let i = 0; i < bubbleCount; i++) {
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        
+        const size = Math.random() * 120 + 40;
+        bubble.style.width = `${size}px`;
+        bubble.style.height = `${size}px`;
+        
+        const position = Math.random() * 100;
+        bubble.style.left = `${position}%`;
+        
+        const delay = Math.random() * 15;
+        bubble.style.animationDelay = `${delay}s`;
+        
+        background.appendChild(bubble);
+      }
+    }
+    
+    createBubbles();
+    
+    const inputs = document.querySelectorAll('input');
+    
+    inputs.forEach(input => {
+      input.addEventListener('focus', () => {
+        input.parentElement.style.transform = 'translateY(-5px)';
+        input.parentElement.style.transition = 'transform 0.3s ease';
+      });
+      
+      input.addEventListener('blur', () => {
+        input.parentElement.style.transform = 'translateY(0)';
+      });
+    });
+  </script>
+</body>
+</html>
