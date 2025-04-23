@@ -1,0 +1,108 @@
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+struct Task {
+    int id;
+    string description;
+    bool completed;
+};
+
+class ToDoList {
+private:
+    vector<Task> tasks;
+    int nextId;
+
+public:
+    ToDoList() : nextId(1) {}
+
+    void addTask(const string& description) {
+        Task newTask = { nextId++, description, false };
+        tasks.push_back(newTask);
+        cout << "Task added: " << newTask.description << endl;
+    }
+
+    void viewTasks() const {
+        if (tasks.empty()) {
+            cout << "No tasks available." << endl;
+            return;
+        }
+        cout << "\nTo-Do List:\n";
+        for (const auto& task : tasks) {
+            cout << "ID: " << task.id << " | "
+                 << (task.completed ? "[Completed] " : "[Pending] ")
+                 << task.description << endl;
+        }
+    }
+
+    void markTaskCompleted(int id) {
+        for (auto& task : tasks) {
+            if (task.id == id) {
+                task.completed = true;
+                cout << "Task marked as completed: " << task.description << endl;
+                return;
+            }
+        }
+        cout << "Task not found." << endl;
+    }
+
+    void deleteTask(int id) {
+        for (auto it = tasks.begin(); it != tasks.end(); ++it) {
+            if (it->id == id) {
+                cout << "Task deleted: " << it->description << endl;
+                tasks.erase(it);
+                return;
+            }
+        }
+        cout << "Task not found." << endl;
+    }
+};
+
+int main() {
+    ToDoList todoList;
+    int choice;
+    string description;
+    int taskId;
+
+    do {
+        cout << "\nTo-Do List Menu:\n";
+        cout << "1. Add Task\n";
+        cout << "2. View Tasks\n";
+        cout << "3. Mark Task Completed\n";
+        cout << "4. Delete Task\n";
+        cout << "5. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+        cin.ignore(); // Ignore trailing newline
+
+        switch (choice) {
+            case 1:
+                cout << "Enter task description: ";
+                getline(cin, description);
+                todoList.addTask(description);
+                break;
+            case 2:
+                todoList.viewTasks();
+                break;
+            case 3:
+                cout << "Enter task ID to mark as completed: ";
+                cin >> taskId;
+                todoList.markTaskCompleted(taskId);
+                break;
+            case 4:
+                cout << "Enter task ID to delete: ";
+                cin >> taskId;
+                todoList.deleteTask(taskId);
+                break;
+            case 5:
+                cout << "Exiting To-Do List. Goodbye!" << endl;
+                break;
+            default:
+                cout << "Invalid choice. Please try again." << endl;
+        }
+    } while (choice != 5);
+
+    return 0;
+}

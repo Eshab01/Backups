@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Push Data to Backend</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+    </style>
+</head>
+<body>
+    <h1>Push Static Values to Backend</h1>
+    
+    <div class="container">
+        <p>This page demonstrates sending two static values to a backend endpoint using JavaScript.</p>
+        <p>The static values are:</p>
+        <ul>
+            <li><strong>Value 1:</strong> "Hello from the client"</li>
+            <li><strong>Value 2:</strong> 42</li>
+        </ul>
+        
+        <button id="pushData">Push Data to Backend</button>
+        <button id="clearStatus">Clear Status</button>
+        
+        <div id="status"></div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pushButton = document.getElementById('pushData');
+            const clearButton = document.getElementById('clearStatus');
+            const statusDiv = document.getElementById('status');
+            
+            // Static values to push
+            const staticValue1 = "Hello from the client";
+            const staticValue2 = 42;
+            
+            pushButton.addEventListener('click', function() {
+                // Create the payload with the static values
+                const payload = {
+                    message: staticValue1,
+                    number: staticValue2,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Display attempting message
+                statusDiv.innerHTML = "Attempting to send data to backend...";
+                statusDiv.className = "";
+                
+                // Make the fetch request to the backend
+                fetch('https://api.example.com/data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Success response
+                    statusDiv.innerHTML = `
+                        <h3>Success!</h3>
+                        <p>Data successfully sent to backend.</p>
+                        <p>Server response: ${JSON.stringify(data)}</p>
+                        <p>Timestamp: ${new Date().toLocaleString()}</p>
+                    `;
+                    statusDiv.className = "success";
+                })
+                .catch(error => {
+                    // Error handling
+                    statusDiv.innerHTML = `
+                        <h3>Error</h3>
+                        <pre>${JSON.stringify(payload, null, 2)}</pre>
+                    `;
+                    statusDiv.className = "error";
+                    
+                    console.log("In a real app, would have sent:", payload);
+                });
+            });
+            
+            clearButton.addEventListener('click', function() {
+                statusDiv.innerHTML = "";
+                statusDiv.className = "";
+            });
+        });
+    </script>
+</body>
+</html>

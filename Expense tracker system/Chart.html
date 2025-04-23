@@ -1,0 +1,34 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script>
+window.onload = function() {
+
+var chart = new CanvasJS.Chart("chartContainer", {
+	animationEnabled: true,
+	title: {
+		text: "Expenses of APRIL- 2024"
+	},
+	data: [{
+		type: "pie",
+		startAngle: 240,
+		yValueFormatString: "##0.00\"%\"",
+		indexLabel: "{label} {y}",
+		dataPoints: [
+		{y:  100, label: "Budget"},
+			{y:  20, label: "Food"},
+			{y: 20, label: "Drink"},
+			
+		]
+	}]
+});
+chart.render();
+
+}
+</script>
+</head>
+<body>
+<div id="chartContainer" style="height: 300px; max-width: 920px; margin: 0px auto;"></div>
+<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+</body>
+</html>
