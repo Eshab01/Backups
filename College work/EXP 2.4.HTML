@@ -1,0 +1,128 @@
+<html>
+<head>
+    <title>Exp 2.4</title>
+    <style>
+        form {
+          margin: 20px;
+          padding: 20px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          background-color: #f2f2f2;
+          width: 300px;
+        }
+
+        h1 {
+          text-align: center;
+          margin-bottom: 20px;
+          color: #333;
+        }
+
+        label {
+          display: block;
+          margin-bottom: 5px;
+          font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select,
+        input[type="number"] {
+          width: 100%;
+          padding: 10px;
+          margin-bottom: 10px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+          background-color: #4CAF50;
+          color: white;
+          padding: 10px 20px;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+          background-color: #45a049;
+        }
+
+       .error {
+          color: red;
+          margin-bottom: 10px;
+        }
+
+       .success-message {
+          color: green;
+          margin-top: 10px;
+        }
+    </style>
+</head>
+<body style="background-color: pink;">
+    <h1 style="color: rgb(0, 0, 0);">Form</h1>
+    <div style="display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;">
+    <form action="">Shadestore
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name"><br>
+        <div class="name-error error"></div>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email"><br><br>
+
+        <label for="product">Product:</label>
+        <select id="product" name="product">
+            <option value="shirt"></option>
+            <option value="shirt">T-Shirt</option>
+            <option value="hoodie">Hoodie</option>
+            <option value="jeans">Jeans</option>
+        </select><br><br>
+
+        <label for="size">Size:</label>
+        <select id="size" name="size">
+            <option value="s"></option>
+            <option value="s">Small </option>
+            <option value="m">Medium</option>
+            <option value="l">Large</option></select><br><br>
+            <label for="quantity">Quantity:</label>
+        <input type="number" id="quantity" name="quantity" min="1" max="5"><br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+
+    <div class="success-message"></div>
+
+    <script>
+        const nameInput = document.querySelector('#name');
+        const nameError = document.querySelector('.name-error');
+
+        nameInput.addEventListener('blur', function() {
+          if (nameInput.value.trim() === '') {
+            nameError.textContent = 'Name is required.';
+          } else {
+            nameError.textContent = '';
+          }
+        });
+
+        const form = document.querySelector('form');
+        const successMessage = document.querySelector('.success-message');
+
+        form.addEventListener('submit', function(event) {
+          event.preventDefault();
+
+          if (nameInput.value.trim() === '') {
+            nameError.textContent = 'Name is required5.';
+          } else {
+            successMessage.textContent = 'Form submitted successfully!';
+            setTimeout(function() {
+              successMessage.textContent = '';
+            }, 3000);
+          }
+        });
+    </script>
+    </div>
+</body>
+</html>
