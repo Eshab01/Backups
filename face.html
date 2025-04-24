@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      background-color: #979797;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    
+    .canvas {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    .face {
+      position: absolute;
+      width: 200px;
+      height: 240px;
+      background-color: #ffd1b0;
+      border-radius: 50% 50% 40% 40%;
+      top: 30px;
+      left: 50px;
+    }
+    
+    .cheek {
+      position: absolute;
+      width: 40px;
+      height: 20px;
+      background-color: #7d361a;
+      border-radius: 50%;
+      opacity: 0.6;
+    }
+    
+    .cheek-left {
+      top: 140px;
+      left: 65px;
+    }
+    
+    .cheek-right {
+      top: 140px;
+      right: 65px;
+    }
+    
+    .forehead-highlight {
+      position: absolute;
+      width: 50px;
+      height: 20px;
+      background-color: #db7f39;
+      border-radius: 50%;
+      top: 60px;
+      left: 75px;
+      opacity: 0.4;
+    }
+    
+    .chin-shadow {
+      position: absolute;
+      width: 60px;
+      height: 15px;
+      background-color: rgba(0,0,0,0.07);
+      border-radius: 50%;
+      bottom: 30px;
+      left: 120px;
+    }
+    
+    .eye {
+      position: absolute;
+      width: 30px;
+      height: 40px;
+      background-color: white;
+      border-radius: 50%;
+      border: 2px solid #333;
+      overflow: hidden;
+    }
+    
+    .eye-left {
+      top: 80px;
+      left: 70px;
+    }
+    
+    .eye-right {
+      top: 80px;
+      right: 70px;
+    }
+    
+    .pupil {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      background-color: #333;
+      border-radius: 50%;
+      top: 12px;
+      left: 7px;
+    }
+    
+    .eye-shine {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background-color: white;
+      border-radius: 50%;
+      top: 15px;
+      left: 12px;
+    }
+    
+    .eyelash {
+      position: absolute;
+      width: 8px;
+      height: 2px;
+      background-color: #f69a9a;
+      top: -4px;
+    }
+    
+    .eyelash-1 {
+      left: 5px;
+      transform: rotate(-20deg);
+    }
+    
+    .eyelash-2 {
+      left: 13px;
+    }
+    
+    .eyelash-3 {
+      left: 20px;
+      transform: rotate(20deg);
+    }
+    
+    .eye-crease {
+      position: absolute;
+      width: 36px;
+      height: 10px;
+      border-top: 2px solid rgba(0,0,0,0.1);
+      border-radius: 50%;
+      top: -10px;
+      left: -3px;
+    }
+    
+    .eyebrow {
+      position: absolute;
+      width: 40px;
+      height: 8px;
+      background-color: #734D32;
+      border-radius: 3px;
+    }
+    
+    .eyebrow-left {
+      top: 60px;
+      left: 65px;
+      transform: rotate(-10deg);
+    }
+    
+    .eyebrow-right {
+      top: 60px;
+      right: 65px;
+      transform: rotate(10deg);
+    }
+    
+    .eyebrow-detail {
+      position: absolute;
+      width: 5px;
+      height: 3px;
+      background-color: #5A3D27;
+    }
+    
+    .eyebrow-detail-left1 {
+      top: 62px;
+      left: 72px;
+    }
+    
+    .eyebrow-detail-left2 {
+      top: 61px;
+      left: 82px;
+    }
+    
+    .eyebrow-detail-right1 {
+      top: 62px;
+      right: 72px;
+    }
+    
+    .eyebrow-detail-right2 {
+      top: 61px;
+      right: 82px;
+    }
+    
+    .nose {
+      position: absolute;
+      width: 20px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #FFB68F;
+      top: 115px;
+      left: 140px;
+    }
+    
+    .nostril {
+      position: absolute;
+      width: 8px;
+      height: 4px;
+      background-color: rgba(0,0,0,0.2);
+      border-radius: 50%;
+      top: 150px;
+    }
+    
+    .nostril-left {
+      left: 135px;
+    }
+    
+    .nostril-right {
+      left: 157px;
+    }
+    
+    .nose-bridge {
+      position: absolute;
+      width: 10px;
+      height: 30px;
+      border-left: 2px solid rgba(0,0,0,0.05);
+      top: 90px;
+      left: 145px;
+    }
+    
+    .mouth {
+      position: absolute;
+      width: 80px;
+      height: 30px;
+      border-radius: 0 0 40px 40px;
+      border-bottom: 4px solid #333;
+      top: 170px;
+      left: 110px;
+    }
+    
+    .lips {
+      position: absolute;
+      width: 70px;
+      height: 15px;
+      background-color: #E2887D;
+      border-radius: 0 0 35px 35px;
+      top: 166px;
+      left: 115px;
+      opacity: 0.6;
+    }
+    
+    .dimple-left {
+      position: absolute;
+      width: 10px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: rgba(0,0,0,0.05);
+      top: 170px;
+      left: 100px;
+    }
+    
+    .dimple-right {
+      position: absolute;
+      width: 10px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: rgba(0,0,0,0.05);
+      top: 170px;
+      right: 100px;
+    }
+    
+    .ear {
+      position: absolute;
+      width: 25px;
+      height: 40px;
+      background-color: #FFD3B4;
+      border-radius: 50%;
+      border: 2px solid #FFBEA4;
+    }
+    
+    .ear-left {
+      top: 100px;
+      left: 40px;
+    }
+    
+    .ear-right {
+      top: 100px;
+      right: 40px;
+    }
+    
+    .ear-inner {
+      position: absolute;
+      width: 12px;
+      height: 20px;
+      border: 1px solid #FFBEA4;
+      border-radius: 50%;
+      top: 10px;
+      left: 6px;
+    }
+    
+    .earring {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background-color: gold;
+      border-radius: 50%;
+      top: 145px;
+      right: 50px;
+      box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+    }
+    
+    .hair {
+      position: absolute;
+      width: 220px;
+      height: 100px;
+      background-color: #5E3719;
+      border-radius: 100px 100px 0 0;
+      top: 0;
+      left: 40px;
+    }
+    
+    .hair-strand {
+      position: absolute;
+      width: 30px;
+      height: 60px;
+      border-radius: 0 0 15px 15px;
+      background-color: #5E3719;
+    }
+    
+    .hair-strand-1 {
+      top: 70px;
+      left: 50px;
+      transform: rotate(-5deg);
+    }
+    
+    .hair-strand-2 {
+      top: 50px;
+      left: 80px;
+      height: 80px;
+    }
+    
+    .hair-strand-3 {
+      top: 50px;
+      right: 80px;
+      height: 80px;
+    }
+    
+    .hair-strand-4 {
+      top: 70px;
+      right: 50px;
+      transform: rotate(5deg);
+    }
+    
+    .hair-highlight {
+      position: absolute;
+      width: 40px;
+      height: 15px;
+      background-color: #7A4D2E;
+      border-radius: 50%;
+      top: 30px;
+      left: 70px;
+    }
+    
+    .neck {
+      position: absolute;
+      width: 50px;
+      height: 40px;
+      background-color: #FFD3B4;
+      bottom: 20px;
+      left: 125px;
+    }
+    
+    .neck-shadow {
+      position: absolute;
+      width: 20px;
+      height: 10px;
+      background-color: rgba(0,0,0,0.05);
+      border-radius: 50%;
+      bottom: 40px;
+      left: 140px;
+    }
+    
+    .necklace {
+      position: absolute;
+      width: 80px;
+      height: 5px;
+      background-color: #C0C0C0;
+      border-radius: 5px;
+      bottom: 15px;
+      left: 110px;
+    }
+    
+    .necklace-pendant {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: #E0E0E0;
+      border-radius: 50%;
+      bottom: 5px;
+      left: 145px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="canvas">
+    <div class="neck"></div>
+    <div class="neck-shadow"></div>
+    <div class="necklace"></div>
+    <div class="necklace-pendant"></div>
+    
+    <div class="face"></div>
+    <div class="forehead-highlight"></div>
+    <div class="cheek cheek-left"></div>
+    <div class="cheek cheek-right"></div>
+    <div class="chin-shadow"></div>
+    
+    <div class="hair"></div>
+    <div class="hair-strand hair-strand-1"></div>
+    <div class="hair-strand hair-strand-2"></div>
+    <div class="hair-strand hair-strand-3"></div>
+    <div class="hair-strand hair-strand-4"></div>
+    <div class="hair-highlight"></div>
+    
+    <div class="ear ear-left">
+      <div class="ear-inner"></div>
+    </div>
+    <div class="ear ear-right">
+      <div class="ear-inner"></div>
+    </div>
+    <div class="earring"></div>
+    
+    <div class="eyebrow eyebrow-left"></div>
+    <div class="eyebrow eyebrow-right"></div>
+    <div class="eyebrow-detail eyebrow-detail-left1"></div>
+    <div class="eyebrow-detail eyebrow-detail-left2"></div>
+    <div class="eyebrow-detail eyebrow-detail-right1"></div>
+    <div class="eyebrow-detail eyebrow-detail-right2"></div>
+    
+    <div class="eye eye-left">
+      <div class="pupil"></div>
+      <div class="eye-shine"></div>
+      <div class="eyelash eyelash-1"></div>
+      <div class="eyelash eyelash-2"></div>
+      <div class="eyelash eyelash-3"></div>
+      <div class="eye-crease"></div>
+    </div>
+    <div class="eye eye-right">
+      <div class="pupil"></div>
+      <div class="eye-shine"></div>
+      <div class="eyelash eyelash-1"></div>
+      <div class="eyelash eyelash-2"></div>
+      <div class="eyelash eyelash-3"></div>
+      <div class="eye-crease"></div>
+    </div>
+    
+    <div class="nose"></div>
+    <div class="nostril nostril-left"></div>
+    <div class="nostril nostril-right"></div>
+    <div class="nose-bridge"></div>
+    
+    <div class="mouth"></div>
+    <div class="lips"></div>
+    <div class="dimple-left"></div>
+    <div class="dimple-right"></div>
+  </div>
+</body>
+</html>

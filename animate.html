@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RISE OF THE SHADOW</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        #canvas {
+            border: 1px solid #333;
+            box-shadow: 0 0 10px rgba(0, 0, 255, 0.5);
+        }
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            background: rgba(50, 50, 80, 0.7);
+            color: white;
+            border: 1px solid #55f;
+            padding: 5px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: rgba(70, 70, 120, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="controls">
+        <button id="restartBtn">Restart</button>
+        <button id="playPauseBtn">Pause</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let isPaused = false;
+        let animationTime = 0;
+        let lastTimestamp = 0;
+        let rafId;
+
+        const PROLOGUE_END = 5;
+        const SKIRMISH_END = 8; 
+        const COMBAT_END = 14;
+        const POWER_CLASH_END = 18;
+        const FINAL_BLOW_END = 22;
+        const ANIMATION_END = 25;
+
+        const AURON_COLOR = '#4080ff';
+        const RAZE_COLOR = '#ff3030';
+        const BG_COLOR = '#111';
+        const SHADOW_COLOR = 'rgba(0, 0, 0, 0.7)';
+
+        let lightningParticles = [];
+        let smokeParticles = [];
+        let debrisParticles = [];
+        let explosionParticles = [];
+
+        let auron = {
+            x: 0,
+            y: 0,
+            vx: 0,
+            vy: 0,
+            scale: 1,
+            rotation: 0,
+            energy: 1,
+            state: 'kneeling',
+            opacity: 1
+        };
+
+        let raze = {
+            x: 0,
+            y: 0,
+            vx: 0,
+            vy: 0,
+            scale: 1,
+            rotation: 0,
+            energy: 1,
+            state: 'descending',
+            opacity: 0.8
+        };
+
+        let shadowClones = [];
+
+        let cityElements = [];
+        let craters = [];
+        
+        let overlayText = {
+            text: "",
+            x: 0,
+            y: 0,
+            opacity: 0,
+            size: 30,
+            color: "#fff"
+        };
+
+        function setupCanvas() {
+            width = window.innerWidth * 0.9;
+            height = window.innerHeight * 0.9;
+            if (width > 1200) width = 1200;
+            if (height > 675) height = 675;
+            
+            if (width/height > 16/9) {
+                width = height * 16/9;
+            } else {
+                height = width * 9/16;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            initializeScene();
+        }
+
+        function initializeScene() {
+ 
+            auron.x = width * 0.4;
+            auron.y = height * 0.8;
+            auron.scale = width / 800;
+            auron.state = 'kneeling';
+            auron.energy = 1;
+            auron.opacity = 1;
+            
+            raze.x = width * 0.6;
+            raze.y = height * 0.2;
+            raze.scale = width / 800;
+            raze.state = 'descending';
+            raze.energy = 1;
+            raze.opacity = 0.8;
+            
+            cityElements = [];
+            for (let i = 0; i < 15; i++) {
+                cityElements.push({
+                    x: Math.random() * width,
+                    y: height * (0.5 + Math.random() * 0.3),
+                    width: 40 + Math.random() * 80,
+                    height: 100 + Math.random() * 200,
+                    damage: Math.random()
+                });
+            }
+            
+            craters = [{
+                x: auron.x,
+                y: auron.y,
+                radius: width * 0.1,
+                depth: 0.8
+            }];
+            
+            lightningParticles = [];
+            smokeParticles = [];
+            debrisParticles = [];
+            explosionParticles = [];
+            shadowClones = [];
+        }
+
+        function drawStickFigure(x, y, scale, state, color, energy, opacity = 1, rotation = 0) {
+            ctx.save();
+            ctx.globalAlpha = opacity;
+            ctx.translate(x, y);
+            ctx.rotate(rotation);
+            
+            ctx.beginPath();
+            ctx.arc(0, -25 * scale, 10 * scale, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+            
+            switch(state) {
+                case 'kneeling':
+                    ctx.beginPath();
+                    ctx.moveTo(0, -15 * scale);
+                    ctx.lineTo(0, 10 * scale);
+                    ctx.lineTo(-15 * scale, 25 * scale);
+                    ctx.moveTo(0, 10 * scale);
+                    ctx.lineTo(5 * scale, 25 * scale);
+                    ctx.moveTo(-10 * scale, -5 * scale);
+                    ctx.lineTo(-20 * scale, 10 * scale);
+                    ctx.moveTo(10 * scale, -5 * scale);
+                    ctx.lineTo(15 * scale, 15 * scale);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 3 * scale;
+                    ctx.stroke();
+                    break;
+                    
+                case 'fighting':
+                    ctx.beginPath();
+                    ctx.moveTo(0, -15 * scale);
+                    ctx.lineTo(0, 10 * scale);
+                    ctx.lineTo(-15 * scale, 25 * scale);
+                    ctx.moveTo(0, 10 * scale);
+                    ctx.lineTo(15 * scale, 25 * scale);
+                    ctx.moveTo(-7 * scale, 0);
+                    ctx.lineTo(-20 * scale, -10 * scale);
+                    ctx.moveTo(7 * scale, 0);
+                    ctx.lineTo(20 * scale, 10 * scale);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 3 * scale;
+                    ctx.stroke();
+                    break;
+                    
+                case 'charging':
+                    ctx.beginPath();
+                    ctx.moveTo(0, -15 * scale);
+                    ctx.lineTo(0, 10 * scale);
+                    ctx.lineTo(-10 * scale, 25 * scale);
+                    ctx.moveTo(0, 10 * scale);
+                    ctx.lineTo(10 * scale, 25 * scale);
+                    ctx.moveTo(-7 * scale, 0);
+                    ctx.lineTo(-25 * scale, -5 * scale);
+                    ctx.moveTo(7 * scale, 0);
+                    ctx.lineTo(25 * scale, -5 * scale);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 3 * scale;
+                    ctx.stroke();
+                    break;
+                    
+                case 'falling':
+                    ctx.beginPath();
+                    ctx.moveTo(0, -15 * scale);
+                    ctx.lineTo(0, 10 * scale);
+                    ctx.lineTo(-20 * scale, 15 * scale);
+                    ctx.moveTo(0, 10 * scale);
+                    ctx.lineTo(20 * scale, 15 * scale);
+                    ctx.moveTo(-7 * scale, 0);
+                    ctx.lineTo(-15 * scale, -20 * scale);
+                    ctx.moveTo(7 * scale, 0);
+                    ctx.lineTo(15 * scale, -20 * scale);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 3 * scale;
+                    ctx.stroke();
+                    break;
+                    
+                case 'defeated':
+                    ctx.beginPath();
+                    ctx.moveTo(0, -15 * scale);
+                    ctx.lineTo(0, 10 * scale);
+                    ctx.lineTo(-25 * scale, 5 * scale);
+                    ctx.moveTo(0, 10 * scale);
+                    ctx.lineTo(25 * scale, 5 * scale);
+                    ctx.moveTo(-7 * scale, 0);
+                    ctx.lineTo(-20 * scale, -10 * scale);
+                    ctx.moveTo(7 * scale, 0);
+                    ctx.lineTo(30 * scale, 0);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 3 * scale;
+                    ctx.stroke();
+                    break;
+                    
+                case 'descending':
+                    ctx.beginPath();
+                    ctx.moveTo(0, -15 * scale);
+                    ctx.lineTo(0, 10 * scale);
+                    ctx.lineTo(-15 * scale, 20 * scale);
+                    ctx.moveTo(0, 10 * scale);
+                    ctx.lineTo(15 * scale, 20 * scale);
+                    ctx.moveTo(-7 * scale, 0);
+                    ctx.lineTo(-20 * scale, 0);
+                    ctx.moveTo(7 * scale, 0);
+                    ctx.lineTo(20 * scale, 0);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 3 * scale;
+                    ctx.stroke();
+                    break;
+                    
+                case 'victorious':
+                    ctx.beginPath();
+                    ctx.moveTo(0, -15 * scale);
+                    ctx.lineTo(0, 10 * scale);
+                    ctx.lineTo(-15 * scale, 25 * scale);
+                    ctx.moveTo(0, 10 * scale);
+                    ctx.lineTo(15 * scale, 25 * scale);
+                    ctx.moveTo(-7 * scale, 0);
+                    ctx.lineTo(-20 * scale, -20 * scale);
+                    ctx.moveTo(7 * scale, 0);
+                    ctx.lineTo(20 * scale, -20 * scale);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 3 * scale;
+                    ctx.stroke();
+                    break;
+            }
+            
+            if (energy > 0.1) {
+                if (color === AURON_COLOR) {
+                    for (let i = 0; i < 5 * energy; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const distance = (20 + Math.random() * 20) * scale;
+                        const x1 = Math.cos(angle) * distance;
+                        const y1 = Math.sin(angle) * distance;
+                        
+                        const angle2 = angle + (Math.random() - 0.5) * 0.5;
+                        const distance2 = distance * 0.6;
+                        const x2 = Math.cos(angle2) * distance2;
+                        const y2 = Math.sin(angle2) * distance2;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(x1, y1);
+                        ctx.lineTo(x2, y2);
+                        ctx.strokeStyle = `rgba(100, 180, 255, ${energy})`;
+                        ctx.lineWidth = 2 * scale;
+                        ctx.stroke();
+                    }
+                } else {
+                    ctx.beginPath();
+                    for (let i = 0; i < 8; i++) {
+                        const angle = (i / 8) * Math.PI * 2;
+                        const radius = (15 + Math.sin(Date.now() / 100 + i) * 5) * scale;
+                        const x = Math.cos(angle) * radius;
+                        const y = Math.sin(angle) * radius;
+                        
+                        if (i === 0) {
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    }
+                    ctx.closePath();
+                    ctx.fillStyle = `rgba(100, 0, 0, ${energy * 0.5})`;
+                    ctx.fill();
+                }
+                
+                ctx.beginPath();
+                ctx.arc(-3 * scale, -25 * scale, 2 * scale, 0, Math.PI * 2);
+                ctx.arc(3 * scale, -25 * scale, 2 * scale, 0, Math.PI * 2);
+                ctx.fillStyle = color === AURON_COLOR ? 
+                                `rgba(100, 180, 255, ${energy})` : 
+                                `rgba(255, 50, 50, ${energy})`;
+                ctx.fill();
+            }
+            
+            ctx.restore();
+        }
+
+        function drawCity() {
+            ctx.fillStyle = BG_COLOR;
+            ctx.fillRect(0, 0, width, height);
+            
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 29) % width;
+                const y = ((i * 37) % height) / 2;
+                const size = Math.random() * 2;
+                ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.7})`;
+                ctx.fillRect(x, y, size, size);
+            }
+            
+            if (Math.random() < 0.1) {
+                const x = Math.random() * width;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x + (Math.random() - 0.5) * 100, height * 0.3);
+                ctx.strokeStyle = `rgba(180, 210, 255, ${Math.random() * 0.3})`;
+                ctx.lineWidth = 1 + Math.random() * 3;
+                ctx.stroke();
+            }
+            
+            cityElements.forEach(building => {
+                const gradient = ctx.createLinearGradient(
+                    building.x, building.y - building.height, 
+                    building.x, building.y
+                );
+                gradient.addColorStop(0, '#222');
+                gradient.addColorStop(1, '#111');
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(
+                    building.x, 
+                    building.y - building.height, 
+                    building.width, 
+                    building.height
+                );
+                
+                for (let wy = building.y - building.height + 10; 
+                    wy < building.y; wy += 15) {
+                    for (let wx = building.x + 7; 
+                        wx < building.x + building.width - 7; wx += 12) {
+                        
+                        if (Math.random() < building.damage) continue;
+                        
+                        ctx.fillStyle = `rgba(255, 255, 150, ${Math.random() * 0.5})`;
+                        ctx.fillRect(wx, wy, 5, 8);
+                    }
+                }
+                
+                if (building.damage > 0.4) {
+                    ctx.beginPath();
+                    ctx.moveTo(building.x, building.y - building.height * Math.random());
+                    ctx.lineTo(building.x + building.width * Math.random(), building.y);
+                    ctx.strokeStyle = '#222';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+            });
+            
+            const groundGradient = ctx.createLinearGradient(0, height * 0.7, 0, height);
+            groundGradient.addColorStop(0, '#222');
+            groundGradient.addColorStop(1, '#111');
+            ctx.fillStyle = groundGradient;
+            ctx.fillRect(0, height * 0.7, width, height * 0.3);
+        }
+        
+        function drawCraters() {
+            craters.forEach(crater => {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(crater.x, crater.y, crater.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(30, 30, 30, ${crater.depth})`;
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(crater.x, crater.y, crater.radius * 1.05, 0, Math.PI * 2);
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.restore();
+            });
+        }
+        
+        function updateAndDrawParticles() {
+            ctx.save();
+            lightningParticles.forEach((p, index) => {
+                p.life -= 0.02;
+                if (p.life <= 0) {
+                    lightningParticles.splice(index, 1);
+                    return;
+                }
+                
+                p.x += p.vx;
+                p.y += p.vy;
+                
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(p.x + p.length * Math.cos(p.angle), 
+                          p.y + p.length * Math.sin(p.angle));
+                ctx.strokeStyle = `rgba(100, 180, 255, ${p.life})`;
+                ctx.lineWidth = p.width;
+                ctx.stroke();
+            });
+            ctx.restore();
+            
+            ctx.save();
+            smokeParticles.forEach((p, index) => {
+                p.life -= 0.01;
+                if (p.life <= 0) {
+                    smokeParticles.splice(index, 1);
+                    return;
+                }
+                
+                p.x += p.vx;
+                p.y += p.vy;
+                p.size += 0.2;
+                
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.life * 0.3})`;
+                ctx.fill();
+            });
+            ctx.restore();
+            
+            ctx.save();
+            debrisParticles.forEach((p, index) => {
+                p.life -= 0.02;
+                if (p.life <= 0) {
+                    debrisParticles.splice(index, 1);
+                    return;
+                }
+                
+                p.vy += 0.1;
+                p.x += p.vx;
+                p.y += p.vy;
+                p.rotation += p.rotationSpeed;
+                
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation);
+                ctx.fillStyle = `rgba(80, 80, 80, ${p.life})`;
+                ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                ctx.restore();
+            });
+            ctx.restore();
+            
+            ctx.save();
+            explosionParticles.forEach((p, index) => {
+                p.life -= 0.03;
+                if (p.life <= 0) {
+                    explosionParticles.splice(index, 1);
+                    return;
+                }
+                
+                p.x += p.vx;
+                p.y += p.vy;
+                p.size *= 0.95;
+                
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                let gradient = ctx.createRadialGradient(
+                    p.x, p.y, 0, p.x, p.y, p.size
+                );
+                gradient.addColorStop(0, `rgba(255, 200, 50, ${p.life})`);
+                gradient.addColorStop(1, `rgba(200, 50, 0, ${p.life * 0.5})`);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+            });
+            ctx.restore();
+        }
+        
+        function createLightning(x, y, count = 5) {
+            for (let i = 0; i < count; i++) {
+                lightningParticles.push({
+                    x,
+                    y,
+                    vx: (Math.random() - 0.5) * 3,
+                    vy: (Math.random() - 0.5) * 3,
+                    angle: Math.random() * Math.PI * 2,
+                    length: 10 + Math.random() * 20,
+                    width: 1 + Math.random() * 2,
+                    life: 0.5 + Math.random() * 0.5
+                });
+            }
+        }
+        
+        function createSmoke(x, y, count = 3, red = false) {
+            for (let i = 0; i < count; i++) {
+                const r = red ? 100 + Math.random() * 50 : 50 + Math.random() * 30;
+                const g = red ? Math.random() * 30 : 50 + Math.random() * 30;
+                const b = red ? Math.random() * 30 : 50 + Math.random() * 30;
+                
+                smokeParticles.push({
+                    x,
+                    y,
+                    vx: (Math.random() - 0.5) * 1,
+                    vy: -0.5 - Math.random(),
+                    size: 5 + Math.random() * 10,
+                    r, g, b,
+                    life: 0.5 + Math.random() * 0.5
+                });
+            }
+        }
+        
+        function createDebris(x, y, count = 10) {
+            for (let i = 0; i < count; i++) {
+                debrisParticles.push({
+                    x, 
+                    y,
+                    vx: (Math.random() - 0.5) * 5,
+                    vy: -Math.random() * 10,
+                    size: 2 + Math.random() * 6,
+                    rotation: Math.random() * Math.PI * 2,
+                    rotationSpeed: (Math.random() - 0.5) * 0.2,
+                    life: 0.7 + Math.random() * 0.3
+                });
+            }
+        }
+        
+        function createExplosion(x, y, size = 20) {
+            for (let i = 0; i < size; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 1 + Math.random() * 5;
+                
+                explosionParticles.push({
+                    x,
+                    y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    size: 10 + Math.random() * 20,
+                    life: 0.7 + Math.random() * 0.3
+                });
+            }
+            
+            createDebris(x, y, size / 2);
+            createSmoke(x, y, size / 2);
+        }
+        
+        function drawShadowClones() {
+            shadowClones.forEach(clone => {
+                drawStickFigure(
+                    clone.x, clone.y, 
+                    raze.scale * 0.8, 
+                    'fighting', 
+                    RAZE_COLOR, 
+                    0.5,
+                    clone.opacity
+                );
+                
+                if (Math.random() < 0.3) {
+                    createSmoke(clone.x, clone.y, 1, true);
+                }
+            });
+        }
+        
+        function updateShadowClones() {
+            shadowClones.forEach(clone => {
+                clone.x += clone.vx;
+                clone.y += clone.vy;
+                clone.life -= 0.01;
+                
+                if (clone.life <= 0) {
+                    clone.opacity -= 0.05;
+                    if (clone.opacity <= 0) {
+                        const index = shadowClones.indexOf(clone);
+                        if (index > -1) {
+                            shadowClones.splice(index, 1);
+                        }
+                    }
+                }
+                
+                if (Math.random() < 0.05) {
+                    clone.vx = (Math.random() - 0.5) * 5;
+                    clone.vy = (Math.random() - 0.5) * 5;
+                }
+                
+                if (clone.x < 0 || clone.x > width) clone.vx *= -1;
+                if (clone.y < 0 || clone.y > height) clone.vy *= -1;
+            });
+        }
+        
+        function spawnShadowClones(count = 5) {
+            for (let i = 0; i < count; i++) {
+                shadowClones.push({
+                    x: raze.x + (Math.random() - 0.5) * 50,
+                    y: raze.y + (Math.random() - 0.5) * 50,
+                    vx: (Math.random() - 0.5) * 5,
+                    vy: (Math.random() - 0.5) * 5,
+                    life: 1 + Math.random(),
+                    opacity: 0.7
+                });
+            }
+        }
+        
+        function drawOverlayText() {
+            if (overlayText.opacity <= 0) return;
+            
+            ctx.save();
+            ctx.globalAlpha = overlayText.opacity;
+            ctx.font = `${overlayText.size}px Arial`;
+            ctx.fillStyle = overlayText.color;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            
+            ctx.fillText(overlayText.text, overlayText.x, overlayText.y);
+            ctx.restore();
+        }
+        
+        function setOverlayText(text, duration = 3000, size = 30, color = "#fff") {
+            overlayText.text = text;
+            overlayText.x = width / 2;
+            overlayText.y = height / 2;
+            overlayText.size = size;
+            overlayText.color = color;
+            overlayText.opacity = 0;
+            
+            const fadeIn = () => {
+                overlayText.opacity += 0.05;
+                if (overlayText.opacity < 1) {
+                    setTimeout(fadeIn, 50);
+                } else {
+                    setTimeout(() => {
+                        const fadeOut = () => {
+                            overlayText.opacity -= 0.05;
+                            if (overlayText.opacity > 0) {
+                                setTimeout(fadeOut, 50);
+                            }
+                        };
+                        fadeOut();
+                    }, duration);
+                }
+            };
+            fadeIn();
+        }
+        
+        function updateAnimation(timestamp) {
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            const deltaTime = (timestamp - lastTimestamp) / 1000;
+            lastTimestamp = timestamp;
+            
+            if (!isPaused) {
+                animationTime += deltaTime;
+            }
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            drawCity();
+            drawCraters();
+            
+            if (animationTime < PROLOGUE_END) {
+                const progress = animationTime / PROLOGUE_END;
+                
+                auron.state = 'kneeling';
+                
+                raze.y = lerp(height * 0.2, height * 0.5, easeInOut(progress));
+                raze.state = 'descending';
+                
+                if (Math.random() < 0.2) {
+                    createSmoke(raze.x, raze.y, 1, true);
+                }
+                
+                if (Math.random() < 0.1) {
+                    createLightning(auron.x, auron.y, 1);
+                }
+                
+                if (animationTime > 1 && animationTime < 1.1) {
+                    setOverlayText("When light falls... the shadow awakens.", 3000, 26, "#fff");
+                }
+                
+                if (animationTime > 4 && animationTime < 4.1) {
+                    setOverlayText("I wasn't fast enough...", 1500, 20, AURON_COLOR);
+                }
+            }
+            else if (animationTime < SKIRMISH_END) {
+                const progress = (animationTime - PROLOGUE_END) / (SKIRMISH_END - PROLOGUE_END);
+                
+                raze.y = height * 0.6;
+                raze.state = 'fighting';
+                
+                if (progress < 0.3) {
+
+                    auron.state = 'fighting';
+                    auron.x = lerp(width * 0.4, width * 0.55, easeInOut(progress / 0.3));
+                    auron.y = lerp(height * 0.8, height * 0.65, easeInOut(progress / 0.3));
+                    
+                    createLightning(auron.x, auron.y, 2);
+                } else if (progress < 0.6) {
+                    raze.x = lerp(width * 0.6, width * 0.7, easeInOut((progress - 0.3) / 0.3));
+                    createSmoke(raze.x, raze.y, 2, true);
+                } else {
+                    auron.x = lerp(width * 0.55, width * 0.2, easeInOut((progress - 0.6) / 0.4));
+                    auron.y = lerp(height * 0.65, height * 0.7, easeInOut((progress - 0.6) / 0.4));
+                    auron.rotation = lerp(0, Math.PI, easeInOut((progress - 0.6) / 0.4));
+                    
+                    if (progress > 0.65 && progress < 0.67) {
+                        createExplosion(width * 0.2, height * 0.7, 15);
+                        craters.push({
+                            x: width * 0.2,
+                            y: height * 0.7,
+                            radius: width * 0.05,
+                            depth: 0.6
+                        });
+                    }
+                    
+                    if (progress > 0.9 && progress < 0.91) {
+                        setOverlayText("I'm not done yet.", 1500, 20, AURON_COLOR);
+                    }
+                }
+            }
+            else if (animationTime < COMBAT_END) {
+                const progress = (animationTime - SKIRMISH_END) / (COMBAT_END - SKIRMISH_END);
+                
+                auron.rotation = 0;
+                auron.state = 'fighting';
+                raze.state = 'fighting';
+                
+                if (progress < 0.4) {
+                    const phaseProgress = progress / 0.4;
+                    
+                    if (Math.random() < 0.2) {
+                        auron.x = width * (0.2 + Math.random() * 0.6);
+                        auron.y = height * (0.3 + Math.random() * 0.4);
+                        raze.x = width * (0.2 + Math.random() * 0.6);
+                        raze.y = height * (0.3 + Math.random() * 0.4);
+                        
+                        createLightning(auron.x, auron.y, 3);
+                        createSmoke(raze.x, raze.y, 3, true);
+                        
+                        if (Math.random() < 0.5) {
+                            const impactX = (auron.x + raze.x) / 2;
+                            const impactY = (auron.y + raze.y) / 2;
+                            createExplosion(impactX, impactY, 5);
+                        }
+                    }
+                    
+                    if (phaseProgress > 0.9) {
+                        auron.x = width * 0.4;
+                        auron.y = height * 0.6;
+                        raze.x = lerp(width * 0.5, width * 0.8, easeInOut((phaseProgress - 0.9) / 0.1));
+                        raze.y = height * 0.6;
+                        
+                        if (phaseProgress > 0.95 && phaseProgress < 0.96) {
+                            createExplosion(width * 0.8, height * 0.6, 30);
+                        }
+                    }
+                }
+                
+                else {
+                    const phaseProgress = (progress - 0.4) / 0.6;
+                    
+                    raze.x = width * 0.7;
+                    raze.y = height * 0.6;
+                    
+                    auron.x = width * 0.3;
+                    auron.y = height * 0.6;
+                    
+                    if (phaseProgress > 0.1 && phaseProgress < 0.12) {
+                        setOverlayText("Let's even the odds.", 1500, 20, RAZE_COLOR);
+                    }
+                    
+                    if (phaseProgress > 0.15 && phaseProgress < 0.16) {
+                        spawnShadowClones(6);
+                    }
+                    
+                    if (phaseProgress > 0.2) {
+                        updateShadowClones();
+                        
+                        if (Math.random() < 0.2) {
+                            createLightning(auron.x, auron.y, 3);
+                            
+                            if (shadowClones.length > 0 && Math.random() < 0.3) {
+                                const randomIndex = Math.floor(Math.random() * shadowClones.length);
+                                const clone = shadowClones[randomIndex];
+                                createSmoke(clone.x, clone.y, 5, true);
+                                shadowClones.splice(randomIndex, 1);
+                            }
+                        }
+                        
+                        if (phaseProgress > 0.8) {
+                           
+                            shadowClones = [];
+                            
+                            raze.x = width * 0.4;
+                            raze.y = height * 0.5;
+                            
+                            auron.y = lerp(height * 0.6, height * 0.7, easeInOut((phaseProgress - 0.8) / 0.2));
+                            
+                            if (phaseProgress > 0.9 && phaseProgress < 0.92) {
+                                createExplosion(auron.x, auron.y, 20);
+                                createDebris(auron.x, auron.y, 30);
+                                
+                                craters.push({
+                                    x: auron.x,
+                                    y: auron.y,
+                                    radius: width * 0.1,
+                                    depth: 0.7
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+           
+            else if (animationTime < POWER_CLASH_END) {
+                const progress = (animationTime - COMBAT_END) / (POWER_CLASH_END - COMBAT_END);
+                
+                auron.x = width * 0.3;
+                auron.y = height * 0.6;
+                auron.state = 'charging';
+                
+                raze.x = width * 0.7;
+                raze.y = height * 0.6;
+                raze.state = 'charging';
+                
+                if (progress < 0.5) {
+                    
+                    for (let i = 0; i < 5; i++) {
+                        createLightning(
+                            auron.x + (Math.random() - 0.5) * 50, 
+                            auron.y + (Math.random() - 0.5) * 50, 
+                            1
+                        );
+                    }
+                    
+                    for (let i = 0; i < 5; i++) {
+                        createSmoke(
+                            raze.x + (Math.random() - 0.5) * 50,
+                            raze.y + (Math.random() - 0.5) * 50,
+                            1,
+                            true
+                        );
+                    }
+                } else {
+                    auron.x = lerp(width * 0.3, width * 0.5, easeInOut((progress - 0.5) / 0.5));
+                    auron.y = lerp(height * 0.6, height * 0.4, easeInOut((progress - 0.5) / 0.5));
+                    
+                    raze.x = lerp(width * 0.7, width * 0.5, easeInOut((progress - 0.5) / 0.5));
+                    raze.y = lerp(height * 0.6, height * 0.4, easeInOut((progress - 0.5) / 0.5));
+                    
+                    createLightning(auron.x, auron.y, 3);
+                    createSmoke(raze.x, raze.y, 3, true);
+                    
+                    if (progress > 0.95) {
+                        
+                        ctx.fillStyle = `rgba(255, 255, 255, ${(1 - (progress - 0.95) / 0.05)})`;
+                        ctx.fillRect(0, 0, width, height);
+                        
+                        if (progress > 0.95 && progress < 0.96) {
+                            createExplosion(width/2, height*0.4, 50);
+                        }
+                    }
+                }
+            }
+            else if (animationTime < FINAL_BLOW_END) {
+                const progress = (animationTime - POWER_CLASH_END) / (FINAL_BLOW_END - POWER_CLASH_END);
+                
+                auron.state = 'falling';
+                auron.x = width * 0.5;
+                auron.y = lerp(height * 0.3, height * 0.7, easeInOut(progress));
+                auron.energy = 1 - progress * 0.8;
+                
+                if (Math.random() < 0.1) {
+                    createLightning(auron.x, auron.y, 1);
+                }
+                
+                raze.state = 'descending';
+                raze.x = width * 0.5; 
+                raze.y = lerp(height * 0.3, height * 0.6, easeInOut(progress));
+                
+                if (progress > 0.5 && progress < 0.6) {
+                    
+                    auron.y = raze.y;
+                    setOverlayText("Your light never stood a chance.", 1500, 20, RAZE_COLOR);
+                }
+                
+                if (progress > 0.8) {
+                    auron.state = 'defeated';
+                    auron.y = height * 0.7;
+                    
+                    if (progress > 0.85 && progress < 0.86) {
+                        
+                        craters.push({
+                            x: width * 0.5,
+                            y: height * 0.7,
+                            radius: width * 0.2,
+                            depth: 0.8
+                        });
+                        
+                        createExplosion(width * 0.5, height * 0.7, 40);
+                        createDebris(width * 0.5, height * 0.7, 50);
+                        
+                        canvas.style.transform = 'translate(5px, 5px)';
+                        setTimeout(() => {
+                            canvas.style.transform = 'translate(-5px, -5px)';
+                            setTimeout(() => {
+                                canvas.style.transform = 'translate(0, 0)';
+                            }, 50);
+                        }, 50);
+                    }
+                }
+            }
+            
+            else if (animationTime < ANIMATION_END) {
+                const progress = (animationTime - FINAL_BLOW_END) / (ANIMATION_END - FINAL_BLOW_END);
+                
+                auron.state = 'defeated';
+                auron.x = width * 0.5;
+                auron.y = height * 0.7;
+                auron.energy = 0.2 - progress * 0.2;
+                
+                raze.state = 'victorious';
+                raze.x = width * 0.5;
+                raze.y = height * 0.6;
+                raze.energy = 1;
+                
+                if (progress > 0.5 && progress < 0.51) {
+                    setOverlayText("Hope... is an illusion.", 2000, 24, RAZE_COLOR);
+                }
+                
+                if (progress > 0.8) {
+                    const glitchOffset = Math.random() < 0.3 ? (Math.random() - 0.5) * 10 : 0;
+                    
+                    ctx.save();
+                    ctx.font = "bold 36px Arial";
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    ctx.fillStyle = RAZE_COLOR;
+                    ctx.fillText("☠️ RISE OF THE SHADOW ☠️", 
+                                 width/2 + glitchOffset, height/2 - 20);
+                    
+                    ctx.font = "20px Arial";
+                    ctx.fillText("The beginning of the end.", 
+                                 width/2 - glitchOffset, height/2 + 20);
+                    ctx.restore();
+                }
+            }
+            
+            else {
+                animationTime = 0;
+            }
+            
+            drawShadowClones();
+            
+            drawStickFigure(auron.x, auron.y, auron.scale, auron.state, AURON_COLOR, auron.energy, auron.opacity, auron.rotation);
+            drawStickFigure(raze.x, raze.y, raze.scale, raze.state, RAZE_COLOR, raze.energy, raze.opacity, raze.rotation);
+            
+            updateAndDrawParticles();
+            
+            drawOverlayText();
+            
+            rafId = requestAnimationFrame(updateAnimation);
+        }
+        
+        function lerp(a, b, t) {
+            return a + (b - a) * t;
+        }
+        
+        function easeInOut(t) {
+            return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+        }
+        
+        function startAnimation() {
+           
+            animationTime = 0;
+            setupCanvas();
+            
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+            }
+            rafId = requestAnimationFrame(updateAnimation);
+        }
+        
+        window.addEventListener('resize', setupCanvas);
+        
+        document.getElementById('restartBtn').addEventListener('click', () => {
+            startAnimation();
+        });
+        
+        document.getElementById('playPauseBtn').addEventListener('click', () => {
+            isPaused = !isPaused;
+            document.getElementById('playPauseBtn').textContent = isPaused ? 'Play' : 'Pause';
+        });
+        
+        setupCanvas();
+        startAnimation();
+    </script>
+</body>
+</html>
