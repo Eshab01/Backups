@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Room - WhisperWeb</title>
+  <style>
+     body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(circle, #000 20%, #222 70%);
+  z-index: -1;
+}
+
+.content {
+  text-align: center;
+  z-index: 1;
+  position: relative;
+  padding-bottom: 20px;
+}
+
+h1 {
+  font-size: 4em;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+h1 span {
+  color: #ff7f0e;
+}
+
+p {
+  font-size: 1.5em;
+  color: #fff;
+  margin-bottom: 30px;
+}
+
+input {
+  padding: 10px;
+  font-size: 1.2em;
+  width: 300px;
+  border: none;
+  border-radius: 25px;
+}
+.options {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+button {
+  padding: 15px 30px;
+  font-size: 1.2em;
+  background-color: #ff7f0e;
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s, transform 0.3s;
+  margin: 10px;
+}
+
+button:hover {
+  background-color: #fff;
+  color: #000;
+  transform: scale(1.1);
+}
+
+#chatBox {
+  width: 100%;
+  height: 300px;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: rgba(12, 4, 4, 0.1);
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.sender-name {
+  font-weight: bold;
+  font-size: 0.8em;
+  color: #666;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.message {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 15px;
+  max-width: 70%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-end;
+}
+
+
+.message.sender {
+  background-color: #4CAF50;
+  color: #fff;
+  align-self: flex-end;
+  text-align: right; 
+  float: right; 
+}
+
+.message.receiver {
+  background-color: #ff7f0e;
+  color: #fff;
+  align-self: flex-start;
+  text-align: left; 
+  float: left; 
+}
+.clearfix {
+  clear: both;
+}
+
+.popup {
+  position: absolute;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+  </style>
+</head>
+<body>
+  <div class="background"></div>
+  <div class="content">
+    <h1>Welcome to <span>WhisperWeb</span> Chat Room</h1>
+    <div id="chatBox"></div>
+    <form id="messageForm">
+      <input type="text" id="messageInput" placeholder="Type your message here..." autocomplete="off" required>
+      <button type="submit">Send</button>
+    </form>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+  var userName = localStorage.getItem('userName');
+  document.querySelector('.content h1 span').textContent = userName;
+  function sendMessage(message) {
+    addMessageToChatBox(message, 'sender', userName);
+  }
+  function addMessageToChatBox(message, sender, senderName) {
+    var chatBox = document.getElementById('chatBox');
+    var messageElement = document.createElement('div');
+    messageElement.classList.add('message');
+    
+    var senderNameElement = document.createElement('span');
+    senderNameElement.textContent = senderName;
+    senderNameElement.classList.add('sender-name');
+    
+    var messageTextElement = document.createElement('span');
+    messageTextElement.textContent = message;
+    
+    messageElement.appendChild(senderNameElement);
+    messageElement.appendChild(messageTextElement);
+    
+    if (sender === 'sender') {
+      messageElement.classList.add('sender');
+    } else {
+      messageElement.classList.add('receiver');
+    }
+    
+    var clearfix = document.createElement('div');
+    clearfix.classList.add('clearfix');
+    chatBox.appendChild(messageElement);
+    chatBox.appendChild(clearfix); 
+    chatBox.scrollTop = chatBox.scrollHeight; 
+    
+    messageElement.addEventListener('contextmenu', function(event) {
+      event.preventDefault();
+      var popup = document.createElement('div');
+      popup.classList.add('popup');
+      popup.innerHTML = '<p>Delete message?</p><br><button class="delete-for-self">Delete for myself</button><button class="delete-for-everyone">Delete for everyone</button><button class="cancel">Cancel</button>';
+      document.body.appendChild(popup);
+      
+      var popupButtons = popup.querySelectorAll('button');
+      popupButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+          if (button.classList.contains('delete-for-self')) {
+            messageElement.remove();
+            popup.remove();
+          } else if (button.classList.contains('delete-for-everyone')) {
+            
+            messageElement.remove();
+            popup.remove();
+          } else if (button.classList.contains('cancel')) {
+            popup.remove();
+          }
+        });
+      });
+      
+      
+      var popupRect = popup.getBoundingClientRect();
+      popup.style.top = ((window.innerHeight - popupRect.height) / 2) + 'px';
+      popup.style.left = ((window.innerWidth - popupRect.width) / 2) + 'px';
+    });
+  }
+  document.getElementById('messageForm').addEventListener('submit', function(event) {
+    event.preventDefault(); 
+    var messageInput = document.getElementById('messageInput');
+    var message = messageInput.value.trim();
+    if (message !== '') {
+      sendMessage(message);
+      messageInput.value = ''; 
+    }
+  });
+});
+  </script>
+</body>
+</html>

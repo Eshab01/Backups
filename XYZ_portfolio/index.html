@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Website</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+        .content {
+            margin-top: 20px;
+        }
+        .icons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 2rem;
+        }
+        .icons span {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+        h2 {
+            margin-top: 15px;
+            font-size: 2rem;
+        }
+        h2 span {
+            color: #8a2be2;
+            text-shadow: 0 0 10px #8a2be2;
+        }
+        .website {
+            margin-top: 10px;
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <section id="welcome-section">
+        <div class="welcome-container">
+            <h1>Welcome To My <span>Portfolio Website</span></h1>
+            <div class="icons">
+                <i class="fas fa-code"></i>
+                <i class="fas fa-user"></i>
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <p>&copy; www.saijjar</p>
+        </div>
+    </section>
+
+    <section id="about-section">
+        <div class="about-container">
+            <h2><span>Frontend</span> Developer</h2>
+            <p>Network & Telecom SI</p>
+            <p>Menciptakan Website Yang Inovatif, Fungsional, dan User-Friendly untuk Solusi Digital.</p>
+            <div class="skills">
+                <button>React</button>
+                <button>Javascript</button>
+                <button>Node.js</button>
+                <button>Tailwind</button>
+            </div>
+            <div class="buttons">
+                <button>Projects</button>
+                <button>Contact</button>
+            </div>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+</html>

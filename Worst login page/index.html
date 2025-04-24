@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extremely Inefficient Login Form</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(45deg, #ff0000, #00ff00, #0000ff, #ffff00, #ff00ff);
+            background-size: 1000% 1000%;
+            animation: gradientAnimation 0.5s linear infinite;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 100%; }
+        }
+
+        .login-container {
+            width: 400px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0, 0, 0, 0.05) 10px, rgba(0, 0, 0, 0.05) 20px);
+            animation: patternMove 0.5s linear infinite;
+        }
+
+        @keyframes patternMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 20px; }
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .spinner {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner-inner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 0.5s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #passwordStrength {
+            height: 5px;
+            margin-top: 5px;
+            width: 100%;
+            background-color: #ddd;
+        }
+
+        #passwordStrengthBar {
+            height: 100%;
+            width: 0;
+            background-color: red;
+            transition: width 0.2s, background-color 0.2s;
+        }
+
+        #decorations {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <div id="decorations"></div>
+    <div class="spinner">
+        <div class="spinner-inner"></div>
+    </div>
+    <div class="login-container">
+        <h2>Login Form</h2>
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+                <div id="passwordStrength">
+                    <div id="passwordStrengthBar"></div>
+                </div>
+            </div>
+            <div class="input-group">
+                <button type="submit" id="loginButton">Login</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Generate a massive number of DOM elements in the background
+        function createDecorations() {
+            const decorations = document.getElementById('decorations');
+            for (let i = 0; i < 5000; i++) {
+                const div = document.createElement('div');
+                div.style.position = 'absolute';
+                div.style.width = '10px';
+                div.style.height = '10px';
+                div.style.backgroundColor = getRandomColor();
+                div.style.left = Math.random() * window.innerWidth + 'px';
+                div.style.top = Math.random() * window.innerHeight + 'px';
+                div.style.borderRadius = '50%';
+                div.style.opacity = '0.5';
+                div.style.animation = `move ${Math.random() * 5 + 2}s linear infinite`;
+                decorations.appendChild(div);
+                
+                // Force layout recalculation on each iteration
+                document.body.offsetHeight;
+            }
+        }
+
+        // Create a new style sheet with many animations
+        function createAnimations() {
+            let style = document.createElement('style');
+            let css = '';
+            for (let i = 0; i < 1000; i++) {
+                css += `
+                @keyframes move${i} {
+                    0% { transform: translate(0, 0); }
+                    25% { transform: translate(${Math.random() * 100}px, ${Math.random() * 100}px); }
+                    50% { transform: translate(${Math.random() * 100}px, ${Math.random() * 100}px); }
+                    75% { transform: translate(${Math.random() * 100}px, ${Math.random() * 100}px); }
+                    100% { transform: translate(0, 0); }
+                }`;
+            }
+            style.textContent = css;
+            document.head.appendChild(style);
+        }
+
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        // Inefficient password strength checker
+        function checkPasswordStrength(password) {
+            // Very inefficient way to calculate password strength
+            let strength = 0;
+            const factorial = (n) => {
+                if (n === 0 || n === 1) return 1;
+                let result = 1;
+                for (let i = 2; i <= n; i++) {
+                    result *= i;
+                }
+                return result;
+            };
+            
+            // Generate all possible substrings (highly inefficient)
+            const allSubstrings = [];
+            for (let i = 0; i < password.length; i++) {
+                for (let j = i + 1; j <= password.length; j++) {
+                    allSubstrings.push(password.substring(i, j));
+                }
+            }
+            
+            // Create an unnecessarily large array
+            const largeArray = new Array(10000).fill(0);
+            
+            // Perform unnecessary calculations for each character
+            for (let i = 0; i < password.length; i++) {
+                const char = password.charAt(i);
+                const charCode = char.charCodeAt(0);
+                
+                // Extremely inefficient loops
+                for (let j = 0; j < 500; j++) {
+                    for (let k = 0; k < 500; k++) {
+                        strength += (charCode * j) % (k + 1);
+                        
+                        // Force layout recalculation
+                        document.body.offsetHeight;
+                    }
+                }
+                
+                // Try to calculate factorial of large numbers (will be slow)
+                if (charCode > 40) {
+                    try {
+                        factorial(20);
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            }
+
+            // Normalize strength for display purposes
+            strength = Math.min(100, Math.max(0, strength % 100));
+            
+            // Update the password strength indicator
+            const passwordStrengthBar = document.getElementById('passwordStrengthBar');
+            passwordStrengthBar.style.width = strength + '%';
+            
+            if (strength < 30) {
+                passwordStrengthBar.style.backgroundColor = 'red';
+            } else if (strength < 70) {
+                passwordStrengthBar.style.backgroundColor = 'orange';
+            } else {
+                passwordStrengthBar.style.backgroundColor = 'green';
+            }
+        }
+
+        // Create excessive memory-consuming objects
+        const memoryHogs = [];
+        function consumeMemory() {
+            setInterval(() => {
+                for (let i = 0; i < 1000; i++) {
+                    const obj = {
+                        data: new Array(10000).fill(Math.random().toString(36)),
+                        timestamp: Date.now(),
+                        nestedObjects: []
+                    };
+                    
+                    // Create nested objects to increase memory usage
+                    for (let j = 0; j < 100; j++) {
+                        obj.nestedObjects.push({
+                            moreData: new Array(1000).fill(Math.random().toString(36)),
+                            id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36)
+                        });
+                    }
+                    
+                    memoryHogs.push(obj);
+                    
+                    // Force layout recalculation
+                    document.body.offsetHeight;
+                }
+            }, 100);
+        }
+
+        // Simulating an extremely inefficient server request
+        function simulateServerRequest() {
+            return new Promise((resolve) => {
+                // Generate a massive amount of data to send
+                const hugeData = {};
+                for (let i = 0; i < 10000; i++) {
+                    hugeData[`key${i}`] = Array(1000).fill(`value${i}`).join('');
+                }
+                
+                // Stringify the massive object repeatedly (very inefficient)
+                let dataString = '';
+                for (let i = 0; i < 20; i++) {
+                    dataString += JSON.stringify(hugeData);
+                }
+                
+                // Simulate network delay
+                setTimeout(() => {
+                    resolve({ success: true });
+                }, 3000);
+            });
+        }
+
+        // Initialize everything
+        window.addEventListener('load', function() {
+            createDecorations();
+            createAnimations();
+            consumeMemory();
+            
+            const passwordInput = document.getElementById('password');
+            passwordInput.addEventListener('input', function() {
+                checkPasswordStrength(this.value);
+            });
+            
+            const loginForm = document.getElementById('loginForm');
+            const spinner = document.querySelector('.spinner');
+            
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                spinner.style.display = 'flex';
+                
+                // Get input values and generate unnecessary copies
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                // Create unnecessary large data
+                const userData = {
+                    username: username,
+                    password: password,
+                    timestamp: Date.now(),
+                    browserInfo: {
+                        userAgent: navigator.userAgent,
+                        language: navigator.language,
+                        platform: navigator.platform,
+                        // Add more browser info
+                    },
+                    extras: Array(1000).fill({
+                        data: Array(1000).fill(Math.random().toString(36))
+                    })
+                };
+                
+                // Stringify and parse the data multiple times (inefficient)
+                let processedData = userData;
+                for (let i = 0; i < 100; i++) {
+                    processedData = JSON.parse(JSON.stringify(processedData));
+                }
+                
+                try {
+                    const response = await simulateServerRequest();
+                    
+                    if (response.success) {
+                        alert('Login successful! But our server probably crashed 😅');
+                    } else {
+                        alert('Login failed. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again later.');
+                } finally {
+                    spinner.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
